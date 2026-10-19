@@ -12,7 +12,7 @@
  gl.attachShader(p,shader(gl.VERTEX_SHADER,'attribute vec2 p;attribute vec2 uv;varying vec2 tex;void main(){tex=uv;gl_Position=vec4(p.x/836.0-1.0,1.0-p.y/470.5,0.0,1.0);}'));
  gl.attachShader(p,shader(gl.FRAGMENT_SHADER,`precision highp float;varying vec2 tex;uniform sampler2D photo;uniform sampler2D closed;uniform float blink;
  float eye(vec2 at,vec2 c,vec2 r){float q=length((at-c)/r);return 1.0-smoothstep(0.62,1.0,q);}
- void main(){vec2 xy=tex*vec2(1672.0,941.0);float m=max(eye(xy,vec2(526.0,321.5),vec2(39.0,17.0)),eye(xy,vec2(638.5,272.0),vec2(33.0,15.0)));vec3 a=texture2D(photo,tex).rgb;vec3 b=texture2D(closed,tex).rgb;gl_FragColor=vec4(mix(a,b,m*blink),1.0);}`));
+ void main(){vec2 xy=tex*vec2(1672.0,941.0);float m=max(eye(xy,vec2(526.0,312.0),vec2(43.0,27.0)),eye(xy,vec2(638.5,263.0),vec2(35.0,25.0)));vec3 a=texture2D(photo,tex).rgb;vec3 b=texture2D(closed,tex).rgb;gl_FragColor=vec4(mix(a,b,m*blink),1.0);}`));
  gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));gl.useProgram(p);
  const base=[],indices=[];for(let y=0;y<=NY;y++)for(let x=0;x<=NX;x++)base.push(x*W/NX,y*H/NY);
  for(let y=0;y<NY;y++)for(let x=0;x<NX;x++){const i=y*(NX+1)+x;indices.push(i,i+1,i+NX+1,i+1,i+NX+2,i+NX+1)}

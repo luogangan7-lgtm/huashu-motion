@@ -10,6 +10,9 @@ const diff=(a,b)=>a.reduce((s,v,i)=>s+Math.abs(v-b[i]),0)/a.length;
 test('Daerdo story30: actual character pixels move against fixed scene references',async()=>{
  const film=await openFilm(openProject('examples/daerdo-story30-film').index,{shotFormat:'png'}),receipt={};
  try{
+  // Isolate photographed character pixels from timed captions; the separate story gate and
+  // final encoded compositor gate keep every real caption/disclosure visible.
+  await film.evaluate("document.querySelectorAll('p').forEach(e=>e.style.visibility='hidden')");
   for(const spec of [
    {name:'wash',times:[.15,.45,.65,1.25,1.85,2.45],moving:[255,610,105,94],fixed:[[245,742,45,8],[900,110,150,240],[435,660,90,55],[650,770,105,100],[188,530,18,180],[1240,80,190,440]],threshold:2},
    {name:'gift',times:[7,8,9,10.6,12.5],moving:[795,620,180,120],fixed:[[1030,380,180,120],[70,100,120,200],[430,130,180,220]],threshold:2},
@@ -32,7 +35,7 @@ test('Daerdo story30: actual character pixels move against fixed scene reference
   for(const t of [20.45,20.72,20.98]){
    await film.seek(t);const frozen=process.env.DAERDO_STORY30_MOTION_MUTATION==='freeze-blink';
    await film.evaluate(`(()=>{document.querySelector('#response-photo').style.transform='none';storyMesh.draw(${t},{freezeMotion:true,freezeBlink:${frozen}})})()`);
-   const p=decodePng(await film.shot({format:'png'}));eyes.push({lid:roi(p,[487,257,185,80]),nose:roi(p,[565,355,60,35]),mouth:roi(p,[555,395,115,40]),son:roi(p,[1180,250,220,400])});
+   const p=decodePng(await film.shot({format:'png'}));eyes.push({lid:roi(p,[480,235,195,108]),nose:roi(p,[565,355,60,35]),mouth:roi(p,[555,395,115,40]),son:roi(p,[1180,250,220,400])});
   }
   const blinkDelta=diff(eyes[1].lid,eyes[0].lid);assert.ok(blinkDelta>1,'actual eyelid pixel blink');
   for(const f of eyes)for(const key of ['nose','mouth','son'])assert.equal(diff(f[key],eyes[0][key]),0,'blink preserves '+key);
