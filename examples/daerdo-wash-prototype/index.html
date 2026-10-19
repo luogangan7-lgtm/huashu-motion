@@ -44,6 +44,10 @@ function draw(t){
 }
 // Diagnostic reads inspect the same mesh vertices uploaded to WebGL; tests also sample actual pixels.
 window.washMesh={draw,snapshot(){let min=Infinity,max=0;for(let i=0;i<indices.length;i+=3){const[a,b,c]=indices.slice(i,i+3).map(v=>v*2);const area=(positions[b]-positions[a])*(positions[c+1]-positions[a+1])-(positions[b+1]-positions[a+1])*(positions[c]-positions[a]);const ratio=area/(W/NX*H/NY);min=Math.min(min,ratio);max=Math.max(max,ratio)}return{ready,t:lastTime,minAreaRatio:min,maxAreaRatio:max,sponge:field(285,673,lastTime),vertices:positions.length/2}},readPixels(){const a=new Uint8Array(1920*1080*4);gl.readPixels(0,0,1920,1080,gl.RGBA,gl.UNSIGNED_BYTE,a);return{opaque:a.every((v,i)=>i%4!==3||v===255),error:gl.getError()}}};
-const clock={t:0},tl=gsap.timeline({paused:true});tl.addLabel('scene:continuous-washing',0).to(clock,{t:3,duration:3,ease:'none',onUpdate:()=>draw(clock.t)},0);window.__timelines.film=tl;
-OM.ready(new Promise((resolve,reject)=>{photo.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,photo);ready=true;draw(clock.t);resolve()};photo.onerror=()=>reject(new Error('Complete anchor failed to load'));photo.src='assets/anchor.png'}));
+const tl=gsap.timeline({paused:true});tl.addLabel('scene:continuous-washing',0);OM.clock(tl,draw,3);window.__timelines.film=tl;
+const screen=([x,y,w,h])=>[x*1920/W,y*1080/H,w*1920/W,h*1080/H];
+OM.region('wash-hand',t=>{const p=field(285,673,t);return screen([250+p.x-285,605+p.y-673,120,110])},'Photographed hand and sponge scrubbing the plate');
+OM.region('wash-forearm',()=>screen([330,550,135,105]),'Continuous photographed forearm');
+OM.region('wash-head',()=>screen([350,50,290,290]),'Mother head with gentle local movement');
+OM.ready(new Promise((resolve,reject)=>{photo.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,photo);ready=true;draw(lastTime);resolve()};photo.onerror=()=>reject(new Error('Complete anchor failed to load'));photo.src='assets/anchor.png'}));
 </script></body></html>
