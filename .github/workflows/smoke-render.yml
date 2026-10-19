@@ -54,9 +54,11 @@ jobs:
           grep -q '^# fail 1$' evidence/scanner-red.tap
           echo 'RED: actual fixed baseline reproduced 9 warnings and whitespace regression failed' | tee evidence/visual-acceptance.txt
           if node --test --test-reporter=tap test/voice-demo.test.js > evidence/captions-red.tap 2>&1; then echo 'Old translucent captions unexpectedly passed readability gate'; exit 1; fi
-          grep -q 'must be opaque' evidence/captions-red.tap
+          grep -q 'not ok .*voice-demo: every spoken word' evidence/captions-red.tap
+          grep -q 'huashu-motion contrast' evidence/captions-red.tap
           grep -q '^# fail 1$' evidence/captions-red.tap
-          echo 'RED: actual baseline translucent caption rejected as must be opaque' | tee -a evidence/visual-acceptance.txt
+          grep -q '^# skipped 0$' evidence/captions-red.tap
+          echo 'RED: actual baseline caption rejected by pixel contrast assertion' | tee -a evidence/visual-acceptance.txt
           git show HEAD:cli/lib/check.js > cli/lib/check.js
           git show HEAD:examples/voice-demo/index.html > examples/voice-demo/index.html
       - name: Existing package, project, browser, scanner and renderer tests
