@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-composition-variables='[{"id":"model","type":"string","default":"G25BT"},{"id":"feature","type":"string","default":"Bluetooth BTE"},{"id":"power","type":"string","default":"Rechargeable"},{"id":"ink","type":"color","default":"#062b4f"},{"id":"paper","type":"color","default":"#ffffff"}]'>
+<head><meta charset="utf-8"><title>DAERDO G25BT</title>
+<!-- Website film: complete official product photographs, current brand palette and three verified facts.
+     Depends on bundled OM/GSAP and runner-fetched pinned public assets; consumed by om render/still/check.
+     Invariants: 12 seconds, complete unwarped devices, readable type, exact opening/closing frame. -->
+<style>
+@font-face{font-family:Inter;src:url('assets/inter.woff2') format('woff2');font-weight:100 900;font-display:block}
+*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#fff}
+#film{position:relative;width:1920px;height:1080px;overflow:hidden;background:#fff;font-family:Inter,sans-serif;color:#062b4f}
+.field{position:absolute;left:0;top:245px;width:825px;height:835px;background:#062b4f;transform:translateX(-825px)}
+.horizon{position:absolute;left:900px;top:0;width:1020px;height:1080px;background:radial-gradient(ellipse at 48% 53%,#fff 25%,#f4f7fa 100%)}
+#product{position:absolute;left:900px;top:80px;width:920px;height:920px;object-fit:contain;transform-origin:50% 50%}
+#brand{position:absolute;left:132px;top:104px;width:285px;height:auto;transform-origin:0 50%}
+.copy{position:absolute;left:132px;top:430px;width:650px;line-height:1.05;letter-spacing:-3px;font-weight:500;margin:0}
+#model{font-size:145px;color:#062b4f}
+#feature{font-size:86px;color:#fff;opacity:0}
+#power{font-size:76px;color:#062b4f;opacity:0}
+.rule{position:absolute;left:132px;top:710px;width:108px;height:3px;background:#062b4f}
+.small-model{position:absolute;left:134px;top:765px;font-size:22px;font-weight:500;letter-spacing:4px;color:#526576;margin:0}
+</style><script src="vendor/gsap.min.js"></script><script src="vendor/om.js"></script>
+<script type="text/vnd.abc" id="om-score">
+X:1
+T:DAERDO · clear space
+M:4/4
+L:1/4
+Q:1/4=80
+K:D
+V:KEY inst=epiano gain=0.35
+!mp! D F A2 | E F A2 | F A d2 | A F D2 |
+V:PAD inst=pad gain=0.18
+!pp! [DFA]4 | [CEA]4 | [DFA]4 | [DFA]4 |
+</script></head>
+<body><div id="film" data-composition-id="film" data-width="1920" data-height="1080" data-fps="30" data-duration="12">
+<div class="field" data-om-id="blue-field"></div><div class="horizon"></div>
+<img id="product" data-om-id="g25bt-complete-pair" src="assets/g25bt.png" alt="G25BT navy and beige complete hearing aids">
+<img id="brand" data-om-id="daerdo-wordmark" src="assets/wordmark.png" alt="DAERDO">
+<h1 class="copy" id="model" data-om-id="model" data-var-text="model">G25BT</h1>
+<h2 class="copy" id="feature" data-om-id="feature" data-var-text="feature">Bluetooth<br>BTE</h2>
+<h2 class="copy" id="power" data-om-id="power" data-var-text="power">Rechargeable</h2>
+<div class="rule" data-om-id="brand-rule"></div><p class="small-model" data-om-id="product-signature">G25BT</p>
+</div>
+<script>
+const tl=gsap.timeline({paused:true,defaults:{ease:'power3.inOut'}});
+tl.addLabel('scene:hook',0).addLabel('scene:connection',3).addLabel('scene:power',6).addLabel('scene:brand',9);
+tl.to('#product',{x:-35,y:-12,scale:1.025,duration:2.4},0)
+.to('#model',{opacity:0,y:-24,duration:.25},2.7)
+.to('.field',{x:825,duration:.55,ease:'power4.out'},2.75)
+.to('.rule',{backgroundColor:'#ffffff',duration:.1},2.9)
+.to('.small-model',{color:'#dce7f0',duration:.1},2.9)
+.fromTo('#feature',{opacity:0,y:28},{opacity:1,y:0,duration:.35,immediateRender:false},3)
+.to('#product',{x:-15,y:5,scale:1,duration:2.4},3)
+.to('#feature',{opacity:0,y:-20,duration:.25},5.7)
+.to('.field',{x:0,duration:.5,ease:'power4.inOut'},5.75)
+.to('.rule',{backgroundColor:'#062b4f',duration:.1},6.2)
+.to('.small-model',{color:'#526576',duration:.1},6.2)
+.fromTo('#power',{opacity:0,y:24},{opacity:1,y:0,duration:.35,immediateRender:false},6.3)
+.to('#product',{x:-45,y:-10,scale:1.025,duration:2.2},6.3)
+.to('#power',{opacity:0,y:-16,duration:.25},8.75)
+.to('#brand',{y:335,scale:1.65,duration:.55},9)
+.to('.rule',{scaleX:0,duration:.3},9)
+.to('#product',{x:0,y:0,scale:1,duration:2.1},9)
+.to('#brand',{y:0,scale:1,duration:.6},10.5)
+.fromTo('#model',{opacity:0,y:20},{opacity:1,y:0,duration:.4,immediateRender:false},10.9)
+.to('.rule',{scaleX:1,duration:.4},10.9)
+.to({},{duration:.7},11.3);
+OM.music({bpm:80,marks:{hook:0,connection:3,power:6,brand:9}});
+OM.sfx('tick',3.35,{gain:.16});OM.sfx('whoosh',6.3,{gain:.12,dur:.35});OM.sfx('chime',9.55,{gain:.12});
+window.__timelines.film=tl;
+</script></body></html>
