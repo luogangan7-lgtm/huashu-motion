@@ -100,7 +100,7 @@ jobs:
           source='109bc68d8c9271e7a2b2c72fc771bf1431a4bcaf'
           url='https://raw.githubusercontent.com/luogangan7-lgtm/huashu-motion/'+source+'/examples/daerdo-ad30-film/index.html'
           old=urllib.request.urlopen(url,timeout=60).read()
-          assert hashlib.sha256(old).hexdigest()=='1cef3ebdd6d2f2918edca3c1eb76e17518361595923c1c33e666ffeeb711d675'
+          assert hashlib.sha256(old).hexdigest()=='bcb1d58bfccab6fc2f61a07f03bef99023aa79b48916f7aae4c481e89be1b6c4'
           path=pathlib.Path('examples/daerdo-ad30-film/index.html');fixed=path.read_bytes()
           try:
               path.write_bytes(old)
