@@ -34,7 +34,7 @@ test('Daerdo film: official device ready, full bounds, readable text and exact l
   await film.seek(12);
   if(mutation==='loop')await film.evaluate("document.querySelector('#product').style.opacity='0'");
   const last=decodePng(await film.shot({format:'png'}));
-  assert.deepEqual(last.px,first.px,'loop endpoint pixels');
+  assert.equal(Buffer.compare(last.px,first.px),0,'loop endpoint pixels');
   console.log(JSON.stringify({sampledTimes:6,minimumTextContrast:minimum,loopEndpoint:'pixel-exact'}));
  }finally{await film.close()}
 });
