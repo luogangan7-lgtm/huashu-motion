@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      OM_HOME: ${{ runner.temp }}/om-home
       OM_SAMPLES: 'off'
       CI: 'true'
     steps:
@@ -29,6 +28,8 @@ jobs:
       - name: Runner prerequisites and source receipt
         run: |
           set -euo pipefail
+          export OM_HOME="$RUNNER_TEMP/om-home"
+          echo "OM_HOME=$OM_HOME" >> "$GITHUB_ENV"
           mkdir -p evidence "$OM_HOME" "$RUNNER_TEMP/isolated-home"
           echo "HOME=$RUNNER_TEMP/isolated-home" >> "$GITHUB_ENV"
           sudo apt-get update -qq
