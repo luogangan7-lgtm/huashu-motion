@@ -1,0 +1,158 @@
+# DAERDO public-asset film; rendering and verification run only on the hosted runner.
+name: DAERDO 30 second family story
+on:
+  pull_request:
+    paths: ['examples/daerdo-story30-film/**', 'test/daerdo-story30.test.js', '.github/workflows/daerdo-story30.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: daerdo-story30-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  film:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      OM_SAMPLES: 'off'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Hosted tools and exact source
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/stills evidence/frames "$RUNNER_TEMP/isolated-home" "$RUNNER_TEMP/om-home"
+          echo "HOME=$RUNNER_TEMP/isolated-home" >> "$GITHUB_ENV"
+          echo "OM_HOME=$RUNNER_TEMP/om-home" >> "$GITHUB_ENV"
+          echo "OM_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          git rev-parse HEAD | tee evidence/source-sha.txt
+          git rev-parse HEAD^{tree} | tee evidence/source-tree.txt
+          { node --version; google-chrome --version; ffmpeg -version | head -1; } | tee evidence/tools.txt
+      - name: Fetch pinned official assets
+        run: |
+          python3 - <<'PY'
+          import urllib.request,hashlib,pathlib,json,struct
+          root=pathlib.Path('examples/daerdo-story30-film/assets');root.mkdir(parents=True,exist_ok=True)
+          assets=[
+          ('g25bt.png','https://daerdo.com/daerdo/hero/product-cutouts/G25BT-cutout-v1.png','97405eea227c53d18985fbda33016cf8fe0697066d6e7657f86a6ae90378aecb'),
+          ('wordmark.png','https://daerdo.com/daerdo/brand/daerdo-wordmark.png?v=20260720','23acee9602bd931d89624969f9e038d9ce0160f8b3320928d335c74762916de9'),
+          ('navy.png','https://daerdo.com/daerdo/source/G25BT/isolated/G25BT-navy-exact-source-v2.png','ee3db821975dba15127aa5e08b6793c37bbd9a9a124e6be13bf80feac634d349'),
+          ('inter.woff2','https://daerdo.com/_next/static/media/83afe278b6a6bb3c-s.2bn3s6zvc0dyp.woff2','c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4')]
+          receipts=[]
+          for name in ('wash','gift','response'):
+              data=(root/(name+'.png')).read_bytes()
+              receipts.append({'name':name+'.png','sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'source':'committed AI-generated storyboard'})
+          for name,url,expected in assets:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=60) as response:
+                  data=response.read();mime=response.headers.get('Content-Type')
+              sha=hashlib.sha256(data).hexdigest()
+              if expected:assert sha==expected,(name,sha)
+              (root/name).write_bytes(data)
+              item={'name':name,'url':url,'sha256':sha,'bytes':len(data),'contentType':mime}
+              if name.endswith('.png'):
+                  assert data[:8]==b'\x89PNG\r\n\x1a\n'
+                  w,h,depth,color=struct.unpack('>IIBB',data[16:26]);assert color in (2,6) and depth==8
+                  item.update(width=w,height=h,colorType=color,alpha=True)
+              receipts.append(item)
+          pathlib.Path('evidence/assets.json').write_text(json.dumps(receipts,indent=2))
+          print(json.dumps(receipts))
+          PY
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          import {decodePng} from './cli/lib/check.js';
+          const receipts=[];
+          for(const name of ['g25bt.png','wordmark.png']){
+            const p=decodePng(readFileSync('examples/daerdo-story30-film/assets/'+name));let x0=p.width,y0=p.height,x1=-1,y1=-1,transparent=0;
+            for(let y=0;y<p.height;y++)for(let x=0;x<p.width;x++){const a=p.px[(y*p.width+x)*4+3];if(a===0)transparent++;if(a>16){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}}
+            if(x1<0)throw Error('Official PNG has no visible pixels');
+            // Record alpha bounds; a white/opaque official source is valid and remains unchanged.
+            receipts.push({name,width:p.width,height:p.height,alphaBounds:[x0,y0,x1,y1],transparentPixels:transparent});
+          }
+          writeFileSync('evidence/asset-alpha.json',JSON.stringify(receipts,null,2));console.log(receipts);
+          JS
+      - name: Hardest hero and four actual keyframes before render
+        run: |
+          set -euo pipefail
+          node cli/om.js still examples/daerdo-story30-film --at 1.5,3.5,8.5,10.8,14.5,15.2,19.5,20.5,21.5,28 --out evidence/stills
+      - name: Upload first visual draft
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-story30-keyframes-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            evidence/stills/
+            evidence/assets.json
+            evidence/asset-alpha.json
+            examples/daerdo-story30-film/treatment.md
+          retention-days: 7
+      - name: Actual visual defect RED controls then GREEN
+        run: |
+          set -euo pipefail
+          for defect in replace-gift hide-response; do
+            if DAERDO_STORY30_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-story30.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
+            grep -q 'not ok .*Daerdo story30' "evidence/red-$defect.tap"
+            grep -q '^# fail 1$' "evidence/red-$defect.tap"
+            grep -q '^# skipped 0$' "evidence/red-$defect.tap"
+            case "$defect" in
+              replace-gift) grep -q 'correct story photograph: gift' "evidence/red-$defect.tap";;
+              hide-response) grep -q 'visible story photograph: response' "evidence/red-$defect.tap";;
+            esac
+            echo "RED actual DOM story defect: $defect" | tee -a evidence/acceptance.txt
+          done
+          timeout 12m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-story30.test.js 2>&1 | tee evidence/tests.tap
+          if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then exit 1; fi
+      - name: Scan and render real film
+        run: |
+          set -euo pipefail
+          node cli/om.js check examples/daerdo-story30-film --json > evidence/check.json
+          jq -e 'length == 0' evidence/check.json
+          node cli/om.js sound examples/daerdo-story30-film 2>&1 | tee evidence/sound.txt
+          timeout 8m node cli/om.js render examples/daerdo-story30-film --workers 2 --verbose 2>&1 | tee evidence/render.txt
+          node cli/om.js qa examples/daerdo-story30-film --json > evidence/qa.json
+          jq -e '.loop.checked == false' evidence/qa.json
+      - name: Actual encode, decode and sound receipts
+        run: |
+          set -euo pipefail
+          film=$(find examples/daerdo-story30-film/out -name '*.mp4' | head -1)
+          cp "$film" evidence/daerdo-story30-film.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json "$film" > evidence/probe.json
+          verify() { jq -e '([.streams[]|select(.codec_type=="video")][0]|.codec_name=="h264" and .width==1920 and .height==1080 and .pix_fmt=="yuv420p" and .nb_read_frames=="900" and .r_frame_rate=="30/1") and any(.streams[];.codec_type=="audio" and .codec_name=="aac") and ((.format.duration|tonumber)-30|fabs)<0.1' "$1" >/dev/null; }
+          mkdir -p evidence/negative-controls
+          ffmpeg -v error -i "$film" -vf scale=1918:1080 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -c:a copy evidence/negative-controls/wrong-width.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json evidence/negative-controls/wrong-width.mp4 > evidence/probe-mutant.json
+          jq -e 'any(.streams[];.codec_type=="video" and .width==1918) and ((.format.duration|tonumber)-30|fabs)<0.1' evidence/probe-mutant.json >/dev/null
+          if verify evidence/probe-mutant.json; then exit 1; fi
+          echo 'RED wrong encoded width' | tee -a evidence/acceptance.txt
+          ffmpeg -v error -i "$film" -t 29 -c copy evidence/negative-controls/wrong-duration.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json evidence/negative-controls/wrong-duration.mp4 > evidence/probe-duration-mutant.json
+          jq -e 'any(.streams[];.codec_type=="video" and .width==1920) and (.format.duration|tonumber)<29.2' evidence/probe-duration-mutant.json >/dev/null
+          if verify evidence/probe-duration-mutant.json; then exit 1; fi
+          echo 'RED wrong encoded duration' | tee -a evidence/acceptance.txt
+          verify evidence/probe.json
+          ffmpeg -v error -xerror -i "$film" -f null - 2> evidence/decode.log
+          ffmpeg -v error -i "$film" -vf 'fps=1/2,scale=480:-1,tile=5x3' -frames:v 1 evidence/contact-sheet.png
+          for at in 0 1.5 3.5 6.9 7 8.5 10.8 12.9 13 14.5 16.9 17 19.5 21.5 24.9 25 25.1 25.6 28 29.96; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
+          ffmpeg -v error -i "$film" -lavfi 'showspectrumpic=s=1600x400:legend=0:scale=log:fscale=log' -frames:v 1 evidence/sound-spectrum.png
+          ffmpeg -hide_banner -i "$film" -af volumedetect -f null - 2> evidence/loudness.txt
+          ffmpeg -hide_banner -i "$film" -af ebur128=peak=true -f null - 2> evidence/lufs.txt
+          grep -Eq 'max_volume: -[0-9]' evidence/loudness.txt
+          ! grep -q 'max_volume: -inf' evidence/loudness.txt
+          sha256sum examples/daerdo-story30-film/assets/* > evidence/ASSET-SHA256SUMS
+          sha256sum evidence/daerdo-story30-film.mp4 examples/daerdo-story30-film/index.html evidence/probe.json > evidence/SHA256SUMS
+          echo 'GREEN real visual gate, 900 frames, exact 30s encode and complete decode' | tee -a evidence/acceptance.txt
+      - name: Upload film and original evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-story30-${{ github.event.pull_request.head.sha || github.sha }}
+          path: evidence/
+          retention-days: 7
+          if-no-files-found: error
