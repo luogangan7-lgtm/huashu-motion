@@ -1,0 +1,82 @@
+# CI module: fixed upstream smoke tests and public example render only.
+# Uses the bundled CLI and runner tools; never installs the agent skill or calls npx.
+name: GitHub smoke and render
+on:
+  push:
+    branches: [ci/github-smoke]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  smoke-render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      OM_SAMPLES: 'off'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Runner prerequisites and source receipt
+        run: |
+          set -euo pipefail
+          export OM_HOME="$RUNNER_TEMP/om-home"
+          echo "OM_HOME=$OM_HOME" >> "$GITHUB_ENV"
+          mkdir -p evidence "$OM_HOME" "$RUNNER_TEMP/isolated-home"
+          echo "HOME=$RUNNER_TEMP/isolated-home" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          command -v google-chrome
+          echo "OM_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          git rev-parse HEAD | tee evidence/source-sha.txt
+          git rev-parse HEAD^{tree} | tee evidence/source-tree.txt
+          { node --version; google-chrome --version; ffmpeg -version | head -1; } | tee evidence/tools.txt
+          printf 'upstream=3e927801e78b587878fb7dbb65d616326df00c21\nrun=%s\n' "$GITHUB_RUN_ID" > evidence/context.txt
+      - name: Existing package, project, browser and renderer tests
+        run: |
+          set -euo pipefail
+          timeout 15m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/browser.test.js test/render.test.js 2>&1 | tee evidence/tests.tap
+          if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then
+            echo 'Required smoke tests must not fail or skip'; exit 1
+          fi
+      - name: Inspect and render bundled voice example
+        run: |
+          set -euo pipefail
+          node cli/om.js doctor 2>&1 | tee evidence/doctor.txt
+          node cli/om.js check examples/voice-demo --json 2>&1 | tee evidence/check.json
+          timeout 8m node cli/om.js render examples/voice-demo --workers 2 --verbose 2>&1 | tee evidence/render.log
+          node cli/om.js qa examples/voice-demo --json > evidence/qa.json
+      - name: Verify encoded file with negative control
+        run: |
+          set -euo pipefail
+          film=examples/voice-demo/out/voice-demo-v1.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json "$film" > evidence/probe.json
+          verify_probe() {
+            jq -e '([.streams[] | select(.codec_type == "video")][0] | .codec_name == "h264" and .width == 1920 and .height == 1080 and .pix_fmt == "yuv420p" and (.nb_read_frames | tonumber) > 300) and any(.streams[]; .codec_type == "audio") and (.format.duration | tonumber) > 10 and (.format.duration | tonumber) < 30' "$1" > /dev/null
+          }
+          jq '(.streams[] | select(.codec_type == "video") | .width) = 1919' evidence/probe.json > evidence/probe-mutant.json
+          if verify_probe evidence/probe-mutant.json; then echo 'RED control failed to reject wrong width'; exit 1; fi
+          echo 'RED: wrong encoded width rejected' | tee evidence/acceptance.txt
+          verify_probe evidence/probe.json
+          ffmpeg -v error -xerror -i "$film" -f null - 2> evidence/decode.log
+          echo 'GREEN: original probe and complete decode passed' | tee -a evidence/acceptance.txt
+          ffmpeg -v error -i "$film" -vf 'fps=1/3,scale=640:-1,tile=3x2' -frames:v 1 evidence/contact-sheet.png
+          sha256sum "$film" examples/voice-demo/index.html evidence/probe.json > evidence/SHA256SUMS
+      - name: Upload actual sample and receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: smoke-render-${{ github.sha }}
+          path: |
+            evidence/
+            examples/voice-demo/out/*.mp4
+          retention-days: 7
+          if-no-files-found: error
