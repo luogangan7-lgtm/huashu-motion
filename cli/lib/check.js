@@ -3,6 +3,8 @@
 //            files that are not there, motion that is not a function of time, layout properties being tweened
 //   page     opens the film in Chrome and samples frames: page errors, length bookkeeping, text that is cut off,
 //            covered or unreadable, blank first/last frames, and whether a frame depends on what was played before it
+// Invariant: only a node containing real text owns a measured text box; whitespace must not aggregate its descendants.
+// Called by cli/om.js check and render; depends on capture/project/frames and PNG pixel analysis.
 // Errors stop a render from being right; warnings are things to look at. Layout findings can be waived per element
 // with data-layout-allow-occlusion, data-layout-allow-overflow and data-layout-allow-overlap.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -152,6 +154,7 @@ const LAYOUT = (t) => `(() => {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const seen = new Set();
   for (let n; (n = walker.nextNode());) {
+    if (!n.textContent.trim()) continue; // indentation is not text owned by the parent container
     const el = n.parentElement;
     // single letters are kinetic type (split, stacked, flown in): judged as a word, not one by one
     if (!el || seen.has(el) || el.textContent.trim().length < 3 || /^(SCRIPT|STYLE|NOSCRIPT|TITLE)$/.test(el.tagName)) continue;

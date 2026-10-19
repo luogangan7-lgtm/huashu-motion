@@ -3,7 +3,7 @@
 name: GitHub smoke and render
 on:
   push:
-    branches: [ci/github-smoke]
+    branches: [ci/github-smoke, fix/voice-demo-readability]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -40,10 +40,24 @@ jobs:
           git rev-parse HEAD^{tree} | tee evidence/source-tree.txt
           { node --version; google-chrome --version; ffmpeg -version | head -1; } | tee evidence/tools.txt
           printf 'upstream=3e927801e78b587878fb7dbb65d616326df00c21\nrun=%s\n' "$GITHUB_RUN_ID" > evidence/context.txt
-      - name: Existing package, project, browser and renderer tests
+      - name: Real baseline RED then restore current sources
         run: |
           set -euo pipefail
-          timeout 15m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/browser.test.js test/render.test.js 2>&1 | tee evidence/tests.tap
+          baseline=336e9e107f8bfb43ef1b1c1487f4aa0d2eb0caed
+          git show "$baseline:cli/lib/check.js" > cli/lib/check.js
+          git show "$baseline:examples/voice-demo/index.html" > examples/voice-demo/index.html
+          node cli/om.js check examples/voice-demo --json > evidence/baseline-red.json 2> evidence/baseline-red.log
+          jq -e 'length == 9 and ([.[] | select(.code == "low-contrast")] | length) == 8 and ([.[] | select(.code == "text-cut")] | length) == 1' evidence/baseline-red.json
+          if node --test --test-reporter=tap test/check.test.js > evidence/scanner-red.tap 2>&1; then echo 'Old scanner unexpectedly passed regression'; exit 1; fi
+          grep -q 'not ok .*whitespace nodes' evidence/scanner-red.tap
+          grep -q '^# fail 1$' evidence/scanner-red.tap
+          echo 'RED: actual fixed baseline reproduced 9 warnings and whitespace regression failed' | tee evidence/visual-acceptance.txt
+          git show HEAD:cli/lib/check.js > cli/lib/check.js
+          git show HEAD:examples/voice-demo/index.html > examples/voice-demo/index.html
+      - name: Existing package, project, browser, scanner and renderer tests
+        run: |
+          set -euo pipefail
+          timeout 15m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/browser.test.js test/render.test.js test/check.test.js test/voice-demo.test.js 2>&1 | tee evidence/tests.tap
           if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then
             echo 'Required smoke tests must not fail or skip'; exit 1
           fi
@@ -51,7 +65,9 @@ jobs:
         run: |
           set -euo pipefail
           node cli/om.js doctor 2>&1 | tee evidence/doctor.txt
-          node cli/om.js check examples/voice-demo --json 2>&1 | tee evidence/check.json
+          node cli/om.js check examples/voice-demo --json > evidence/check.json 2> evidence/check.log
+          jq -e 'length == 0' evidence/check.json
+          echo 'GREEN: current composition has zero scanner warnings or errors' | tee -a evidence/visual-acceptance.txt
           timeout 8m node cli/om.js render examples/voice-demo --workers 2 --verbose 2>&1 | tee evidence/render.log
           node cli/om.js qa examples/voice-demo --json > evidence/qa.json
       - name: Verify encoded file with negative control
@@ -69,6 +85,10 @@ jobs:
           ffmpeg -v error -xerror -i "$film" -f null - 2> evidence/decode.log
           echo 'GREEN: original probe and complete decode passed' | tee -a evidence/acceptance.txt
           ffmpeg -v error -i "$film" -vf 'fps=1/3,scale=640:-1,tile=3x2' -frames:v 1 evidence/contact-sheet.png
+          mkdir -p evidence/frames
+          for at in 0 0.3 1 1.3 2.25 2.5 2.57 2.8 3.23 3.5 3.87 4.5 6.6 6.9 7.6 10.8 11.1 11.8 15.43; do
+            ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"
+          done
           sha256sum "$film" examples/voice-demo/index.html evidence/probe.json > evidence/SHA256SUMS
       - name: Upload actual sample and receipts
         if: always()

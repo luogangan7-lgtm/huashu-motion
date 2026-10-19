@@ -3,8 +3,9 @@
   {"id":"title","type":"string","label":"标题","default":"一句话出片"},
   {"id":"prompt","type":"string","label":"示例指令","default":"做一个会动的产品标题"},
   {"id":"pin","type":"string","label":"画面评论","default":"改成橙色"},
-  {"id":"accent","type":"color","label":"强调色","default":"#d9480f"},
+  {"id":"accent","type":"color","label":"强调色","default":"#b7350c"},
   {"id":"paper","type":"color","label":"底色","default":"#f3eee4"},
+  {"id":"mutedInk","type":"color","label":"未读字幕色","default":"#655f56"},
   {"id":"ink","type":"color","label":"文字色","default":"#1d1b18"},
   {"id":"endHold","type":"number","label":"结尾停留（秒）","default":0.8,"min":0,"max":10,"step":0.1,"group":"节奏"}
 ]'>
@@ -54,7 +55,7 @@
 
   .captions { position: absolute; left: 0; right: 0; top: 930px; text-align: center; font-size: 46px; letter-spacing: 1px; }
   .captions .line { position: absolute; left: 0; right: 0; }
-  .captions .w { color: var(--ink); opacity: .32; }
+  .captions .w { color: var(--mutedInk); opacity: 1; }
 </style>
 <script type="application/json" id="om-cues">{"source":"tts:say:Tingting","precision":"tts","offset":0,"duration":14.66,"words":[
 {"word":"huashu-motion","start":0,"end":0.94},
@@ -91,6 +92,9 @@
 </head>
 <body>
 <!--
+  Narration demo: neutral opaque captions stay readable before each spoken word; the accent is the active word.
+  Depends on bundled OM/GSAP and voice cues; the renderer and scanner consume this composition.
+  Keep narration timing and the title reveal unchanged.
   Narration demo. `om voice examples/voice-demo --text examples/voice-demo/script.txt` writes
   <audio id="om-voice"> and <script id="om-cues">; every timing below hangs off OM.cue('词'),
   so a new take (or `--audio my-recording.m4a`) moves the motion with the words.
@@ -102,7 +106,7 @@
 
   <section id="s-title">
     <div class="kicker" data-om-id="kicker">HUASHU-MOTION</div>
-    <h1 class="title" data-om-id="title" data-layout-allow-overflow></h1>
+    <h1 class="title" data-om-id="title"></h1>
     <div class="rule" data-om-id="rule"></div>
   </section>
 
