@@ -46,3 +46,17 @@ test('check (source): Array.from with an arrow that returns layout, and a file n
   writeFileSync(join(project.root, 'assets', '100%.png'), '');
   assert.deepEqual(codes(checkSource(project), 'error'), []);
 });
+
+// Regression for whitespace ownership: keep genuine leaf contrast/overflow findings intact.
+test('check (page): whitespace nodes never measure a wrapper but real leaf defects remain visible', { skip: !findChrome() && 'no Chrome' }, async () => {
+  const { project } = makeFilm({ sound: false, video: false, body: `
+    <section id="wrapper" style="position:absolute;inset:0;background:#fff">
+      <span id="low" style="position:absolute;left:30px;top:30px;color:#aaa;font:20px sans-serif">Unreadable text</span>
+      <span id="outside" style="position:absolute;left:-12px;top:70px;color:#111;font:20px sans-serif">Outside text</span>
+    </section>
+  ` });
+  const found = await checkPage(project, { samples: 6 });
+  assert.ok(found.some(f => f.code === 'low-contrast' && f.message.startsWith('#low ')), JSON.stringify(found));
+  assert.ok(found.some(f => f.code === 'text-cut' && f.message.startsWith('#outside ')), JSON.stringify(found));
+  assert.ok(!found.some(f => /^(#wrapper|#film|body) /.test(f.message)), JSON.stringify(found));
+});
