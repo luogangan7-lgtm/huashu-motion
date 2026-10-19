@@ -14,6 +14,7 @@ test('Daerdo wash prototype: continuous texture physically moves without cuts or
  const film=await openFilm(openProject(root).index,{shotFormat:'png'}),samples=[],frames=[];
  try{
   assert.equal(film.info.duration,3);
+  if(process.env.DAERDO_WASH_MUTATION==='old-label')await film.evaluate(`(()=>{const p=document.createElement('p');p.textContent='AI dramatization · Motion study';p.style.cssText='position:absolute;right:40px;bottom:30px;margin:0;padding:10px 16px;background:#fff;color:#102e43;font:24px/1.3 Arial,sans-serif';document.querySelector('#film').append(p);return new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok)))})()`);
   for(const t of [.15,.45,.65,.95,1.25,1.55,1.85,2.15,2.45,2.65]){
    await film.seek(t);
    if(process.env.DAERDO_WASH_MUTATION==='freeze-field')await film.evaluate('washMesh.draw(.15)');
@@ -21,6 +22,8 @@ test('Daerdo wash prototype: continuous texture physically moves without cuts or
    assert.ok(v.minAreaRatio>.65&&v.maxAreaRatio<1.35,'positive mesh area with limited local texture stretch');
    assert.ok(((v.sponge.x-315)/73)**2+((v.sponge.y-695)/45)**2<1,'sponge remains inside visible plate');samples.push(v);
    const png=decodePng(await film.shot({format:'png'}));assert.equal(png.width,1920);assert.equal(png.height,1080);
+   const top=region(png,[1520,33,356,45]);let black=0;for(let i=0;i<top.length;i+=3)if(top[i]<8&&top[i+1]<8&&top[i+2]<8)black++;
+   assert.ok(black/(top.length/3)<.01,'no mirrored DOM-label black rectangle');
    frames.push({hand:region(png,box([255,610,105,94])),head:region(png,box([407,140,160,155])),plate:region(png,box([245,742,45,8])),kitchen:region(png,box([900,110,150,240])),support:region(png,box([435,660,90,55])),waist:region(png,box([650,770,105,100])),water:region(png,box([188,530,18,180])),son:region(png,box([1240,80,190,440]))});
   }
   const motion=Math.max(...frames.map(x=>diff(x.hand,frames[0].hand)));

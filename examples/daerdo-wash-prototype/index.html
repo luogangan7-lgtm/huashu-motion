@@ -3,9 +3,9 @@
 <!-- Owns a single continuous photographic UV mesh; no atlas cuts, replacement skin or camera motion.
 Depends on native WebGL, local GSAP/OM and the hash-pinned complete anchor. Called by focused wash CI.
 Invariants: positive mesh area, fixed plate rim/kitchen; short sponge motion within the plate. -->
-<style>*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#243943}#film{position:relative;width:1920px;height:1080px;overflow:hidden}canvas{position:absolute;inset:0;width:1920px;height:1080px}#label{position:absolute;right:40px;bottom:30px;margin:0;padding:10px 16px;background:#fff;color:#102e43;font:24px/1.3 Arial,sans-serif}</style>
+<style>*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#243943}#film{position:relative;width:1920px;height:1080px;overflow:hidden}canvas{position:absolute;inset:0;width:1920px;height:1080px}</style>
 <script src="vendor/gsap.min.js"></script><script src="vendor/om.js"></script></head>
-<body><div id="film" data-composition-id="film" data-width="1920" data-height="1080" data-fps="30" data-duration="3"><canvas id="photo" width="1920" height="1080" aria-label="AI photographic mother washing a plate with a yellow sponge"></canvas><p id="label">AI dramatization · Motion study</p></div>
+<body><div id="film" data-composition-id="film" data-width="1920" data-height="1080" data-fps="30" data-duration="3"><canvas id="photo" width="1920" height="1080" aria-label="AI photographic mother washing a plate with a yellow sponge"></canvas></div>
 <script>
 const W=1672,H=941,NX=209,NY=118,canvas=document.querySelector('#photo');
 const gl=canvas.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:true});

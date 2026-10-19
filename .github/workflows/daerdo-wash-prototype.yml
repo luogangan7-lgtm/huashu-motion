@@ -49,12 +49,16 @@ jobs:
       - name: Actual field pixel freeze RED then restored GREEN
         run: |
           set -euo pipefail
-          defect=freeze-field
-          if DAERDO_WASH_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-wash-prototype.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
-          grep -q 'not ok .*Daerdo wash prototype' "evidence/red-$defect.tap"
-          grep -q '^# fail 1$' "evidence/red-$defect.tap"
-          grep -q 'actual hand and sponge pixel motion' "evidence/red-$defect.tap"
-          echo 'RED actual rendered continuous field frozen' | tee -a evidence/acceptance.txt
+          for defect in freeze-field old-label; do
+            if DAERDO_WASH_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-wash-prototype.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
+            grep -q 'not ok .*Daerdo wash prototype' "evidence/red-$defect.tap"
+            grep -q '^# fail 1$' "evidence/red-$defect.tap"
+            case "$defect" in
+              freeze-field) grep -q 'actual hand and sponge pixel motion' "evidence/red-$defect.tap";;
+              old-label) grep -q 'no mirrored DOM-label black rectangle' "evidence/red-$defect.tap";;
+            esac
+            echo "RED actual rendered $defect" | tee -a evidence/acceptance.txt
+          done
           timeout 8m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-wash-prototype.test.js 2>&1 | tee evidence/tests.tap
           if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then exit 1; fi
       - name: Original scan and actual prototype render
