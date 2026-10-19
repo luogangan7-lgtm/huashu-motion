@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Washing · articulated photographic study</title>
+<!-- One fixed-camera photographic cutout rig. Depends on local GSAP/OM and two hash-pinned original PNGs.
+Called by wash-prototype CI. Invariants: fixed torso/kitchen/plate; shared elbow; sponge stays on plate. -->
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#243943}
+#film{position:relative;width:1920px;height:1080px;overflow:hidden}
+#kitchen{position:absolute;inset:0;width:1920px;height:1080px;object-fit:cover}
+#rig{position:absolute;inset:0}.pivot{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0}
+.part{position:absolute;overflow:hidden;transform-origin:0 0}.part img{position:absolute;max-width:none;width:1254px;height:1254px}
+#torso{left:570px;top:115px;width:610px;height:780px;transform:scale(1.24);clip-path:polygon(0 0,100% 0,100% 37%,76% 40%,68% 77%,75% 87%,100% 90%,100% 100%,0 100%)}
+#torso img{left:0;top:0}
+#label{position:absolute;left:48px;top:42px;margin:0;padding:12px 18px;background:#fff;color:#102e43;font:26px/1.3 Arial,sans-serif}
+</style><script src="vendor/gsap.min.js"></script><script src="vendor/om.js"></script></head>
+<body><div id="film" data-composition-id="film" data-width="1920" data-height="1080" data-fps="30" data-duration="3">
+<img id="kitchen" src="assets/kitchen.png" alt="Empty blue kitchen, AI generated">
+<div id="rig" data-layout-allow-occlusion>
+<div id="left-support" class="pivot"><div class="part" style="left:-517.75px;top:-61.75px;width:654px;height:540px;transform:scale(.95);clip-path:polygon(64% 0,100% 0,100% 100%,0 100%,0 65%,58% 65%,69% 28%)"><img src="assets/rig.png" style="left:-580px;top:-200px" alt="Left support arm with white plate"></div></div>
+<div id="torso" class="part"><img src="assets/rig.png" alt="Fixed mother head and torso"></div>
+<div id="shoulder" class="pivot"><div id="upper-art" class="part" style="left:-218.5px;top:-47.5px;width:370px;height:430px;transform:scale(.95)"><img src="assets/rig.png" style="left:-150px;top:-780px" alt="Articulated right upper arm"></div><div id="elbow" class="pivot"><div id="forearm" class="pivot"><div class="part" style="left:-456px;top:-57px;width:560px;height:370px;transform:scale(.95)"><img src="assets/rig.png" style="left:-640px;top:-870px" alt="Articulated forearm, hand and sponge"></div><i id="wrist" class="pivot"></i><i id="sponge" class="pivot"></i></div></div></div>
+</div><p id="label">AI photographic cutout animation · Motion prototype</p></div>
+<script>
+// Source anchors are measured in the unmodified atlas. All art transforms share these pivots.
+const S={x:1153,y:549},scale=.95,upper={x:-125*scale,y:300*scale},lower={x:-395*scale,y:230*scale};
+const a=Math.hypot(upper.x,upper.y),b=Math.hypot(lower.x,lower.y),ua=Math.atan2(upper.y,upper.x),fa=Math.atan2(lower.y,lower.x);
+const shoulder=document.querySelector('#shoulder'),elbow=document.querySelector('#elbow'),forearm=document.querySelector('#forearm');
+const angle=r=>r*180/Math.PI;
+document.querySelector('#left-support').style.transform='translate(925px,550px)';
+elbow.style.left=upper.x+'px';elbow.style.top=upper.y+'px';
+for(const[id,x,y]of[['sponge',lower.x,lower.y],['wrist',-285*scale,170*scale]]){const e=document.querySelector('#'+id);e.style.left=x+'px';e.style.top=y+'px'}
+function pose(t){
+ const u=Math.max(0,Math.min(1,(t-.3)/2.3));const phase=4*Math.PI*(u*u*(3-2*u));
+ const P={x:555+28*Math.cos(phase),y:895+12*Math.sin(phase)};
+ const dx=P.x-S.x,dy=P.y-S.y,d=Math.hypot(dx,dy),dir=Math.atan2(dy,dx);
+ const q=dir-Math.acos(Math.max(-1,Math.min(1,(a*a+d*d-b*b)/(2*a*d))));
+ const E={x:S.x+a*Math.cos(q),y:S.y+a*Math.sin(q)};
+ const r=Math.atan2(P.y-E.y,P.x-E.x);
+ shoulder.style.transform=`translate(${S.x}px,${S.y}px) rotate(${angle(q-ua)}deg)`;
+ forearm.style.transform=`rotate(${angle(r-fa-(q-ua))}deg)`;
+}
+const clock={t:0};const tl=gsap.timeline({paused:true});
+tl.addLabel('scene:washing-contact',0).to(clock,{t:3,duration:3,ease:'none',onUpdate:()=>pose(clock.t)},0);pose(0);
+window.__timelines.film=tl;
+</script></body></html>

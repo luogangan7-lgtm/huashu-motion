@@ -1,0 +1,11 @@
+{
+  "mode": "native imagegen cloud",
+  "source_path": "/Users/luolimo/.codex/generated_images/01a153d1-a14e-7383-9b6b-a81206b11484/exec-e63a0cbf-301f-4e59-9b43-09f829b2c5e4.png",
+  "prompt": "Use case: precise-object-edit.\nEdit target is the supplied photograph. Remove BOTH people entirely: remove the elderly woman, all of her clothes/arms/hands, the dish and sponge she is holding, the son in the doorway and his gift box. Reconstruct the kitchen naturally behind them: the existing blue cabinets, counter, white ceramic sink, open doorway and room beyond. Keep the sink tap and flowing water, dishes already on the draining rack, window, plants, blue cabinets, door and brass handles, wooden worktop, camera position, perspective, warm side lighting and exact photo look unchanged. No new people, faces, text, logos or objects. This is an empty clean photographic background plate for compositing animated photographic characters. Fill removed regions with plausible continuous kitchen geometry; do not leave ghost limbs or silhouettes. Full 16:9 composition matching original. Opaque background.",
+  "path": "/Volumes/data/huashu-motion-delivery/work/daerdo-story30-20261019/art/wash-kitchen-clean-v1.png",
+  "sha256": "3611a1099c30308d1722481691bcea4b3166e343fab11fcd6e3b3c8347dfae5d",
+  "bytes": 1946727,
+  "width": 1672,
+  "height": 941,
+  "png_color_type": 2
+}

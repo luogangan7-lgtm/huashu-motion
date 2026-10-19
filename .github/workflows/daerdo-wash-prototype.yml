@@ -1,0 +1,89 @@
+# Focused photographic rig experiment. Reuses the repository capture/render tools unchanged.
+name: DAERDO 3 second washing movement
+on:
+  pull_request:
+    paths: ['examples/daerdo-wash-prototype/**', 'test/daerdo-wash-prototype.test.js', '.github/workflows/daerdo-wash-prototype.yml']
+permissions:
+  contents: read
+concurrency:
+  group: daerdo-wash-prototype-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  prototype:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      OM_SAMPLES: 'off'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Hosted tools and exact source
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/stills evidence/frames "$RUNNER_TEMP/isolated-home" "$RUNNER_TEMP/om-home"
+          echo "HOME=$RUNNER_TEMP/isolated-home" >> "$GITHUB_ENV"
+          echo "OM_HOME=$RUNNER_TEMP/om-home" >> "$GITHUB_ENV"
+          echo "OM_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          git rev-parse HEAD | tee evidence/source-sha.txt
+          git rev-parse HEAD^{tree} | tee evidence/source-tree.txt
+          sha256sum examples/daerdo-wash-prototype/assets/* > evidence/ASSET-SHA256SUMS
+      - name: Five actual joint and contact keyframes
+        run: node cli/om.js still examples/daerdo-wash-prototype --at 0.15,0.65,1.25,1.85,2.65 --out evidence/stills
+      - name: Upload first movement draft
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-wash-keyframes-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            evidence/stills/
+            evidence/source-sha.txt
+            evidence/ASSET-SHA256SUMS
+          retention-days: 7
+      - name: Real arm and tool freeze RED then restored GREEN
+        run: |
+          set -euo pipefail
+          for defect in freeze-arm freeze-tool; do
+            if DAERDO_WASH_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-wash-prototype.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
+            grep -q 'not ok .*Daerdo wash prototype' "evidence/red-$defect.tap"
+            grep -q '^# fail 1$' "evidence/red-$defect.tap"
+            case "$defect" in
+              freeze-arm) grep -q 'actual sponge scrub path varies' "evidence/red-$defect.tap";;
+              freeze-tool) grep -q 'shared elbow remains connected' "evidence/red-$defect.tap";;
+            esac
+            echo "RED actual rendered $defect" | tee -a evidence/acceptance.txt
+          done
+          timeout 8m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-wash-prototype.test.js 2>&1 | tee evidence/tests.tap
+          if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then exit 1; fi
+      - name: Original scan and actual prototype render
+        run: |
+          set -euo pipefail
+          node cli/om.js check examples/daerdo-wash-prototype --json > evidence/check.json
+          timeout 5m node cli/om.js render examples/daerdo-wash-prototype --workers 2 --verbose 2>&1 | tee evidence/render.txt
+          node cli/om.js qa examples/daerdo-wash-prototype --json > evidence/qa.json
+      - name: Ninety frames and complete decode
+        run: |
+          set -euo pipefail
+          film=$(find examples/daerdo-wash-prototype/out -name '*.mp4' | head -1)
+          cp "$film" evidence/daerdo-wash-prototype.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json "$film" > evidence/probe.json
+          jq -e '([.streams[]|select(.codec_type=="video")][0]|.codec_name=="h264" and .width==1920 and .height==1080 and .pix_fmt=="yuv420p" and .nb_read_frames=="90" and .r_frame_rate=="30/1") and ((.format.duration|tonumber)-3|fabs)<0.05' evidence/probe.json
+          ffmpeg -v error -xerror -i "$film" -f null - 2> evidence/decode.log
+          for at in 0.15 0.65 1.25 1.85 2.65; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
+          ffmpeg -v error -i "$film" -vf 'fps=5/3,scale=480:-1,tile=5x1' -frames:v 1 evidence/contact-sheet.png
+          sha256sum evidence/daerdo-wash-prototype.mp4 examples/daerdo-wash-prototype/index.html evidence/probe.json > evidence/SHA256SUMS
+          echo 'GREEN articulated motion, fixed references, 90 frames, 3s, full decode. Appearance review pending.' | tee -a evidence/acceptance.txt
+      - name: Upload actual prototype and raw evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-wash-prototype-${{ github.event.pull_request.head.sha || github.sha }}
+          path: evidence/
+          retention-days: 7
+          if-no-files-found: error
