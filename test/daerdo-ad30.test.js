@@ -26,7 +26,7 @@ test('Daerdo ad30: authentic product and readable actual frames',async()=>{
     const o=(Math.min(1079,Math.ceil(word.y+word.h+8))*1920+Math.floor(word.x+word.w/2))*4;
     const c=contrast(word.color,[...png.px.subarray(o,o+3)]);minimum=Math.min(minimum,c);assert.ok(c>=4.5,'text contrast: '+word.text+' '+c);
    }
-   for(let i=0;i<state.text.length;i++)for(let j=i+1;j<state.text.length;j++){const a=state.text[i],b=state.text[j];assert.ok(Math.min(a.x+a.w,b.x+b.w)<=Math.max(a.x,b.x)||Math.min(a.y+a.h,b.y+b.h)<=Math.max(a.y,b.y),'text overlap: '+a.id+' / '+b.id);}
+   for(let i=0;i<state.text.length;i++)for(let j=i+1;j<state.text.length;j++){const a=state.text[i],b=state.text[j];assert.ok(Math.min(a.x+a.w,b.x+b.w)<=Math.max(a.x,b.x)||Math.min(a.y+a.h,b.y+b.h)<=Math.max(a.y,b.y),'text overlap: '+JSON.stringify({t,a,b}));}
   }
   console.log(JSON.stringify({sampledTimes:24,minimumTextContrast:minimum,duration:film.info.duration}));assert.equal(film.info.duration,30);
  }finally{await film.close()}
