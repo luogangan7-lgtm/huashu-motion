@@ -33,7 +33,7 @@
    return{x:x+hand*8*Math.sin(phase)-head*(y-330)*nod,y:y+hand*2*Math.sin(2*phase)+head*(x-555)*nod+patch(x,y,585,456,118,130)*.65*Math.sin(2*Math.PI*t/3)};
   }
   if(scene==='gift'){
-   const a=smooth((t-7)/3.6),weight=rectangle(x,y,600,610,1110,770,130);
+   const a=smooth((t-7)/3.6),weight=rectangle(x,y,600,610,1110,770,90);
    return{x:x-weight*10*a,y:y-weight*2*a};
   }
   const local=clamp((t-17)/8),angle=.0105*Math.sin(2*Math.PI*local),w=rectangle(x,y,295,40,790,535,105),dx=x-590,dy=y-570;
