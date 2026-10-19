@@ -93,7 +93,8 @@ tl.fromTo('#product',{x:60,y:25,scale:.94},{x:0,y:0,scale:1,duration:.7,immediat
 .set('#product',{x:-780,y:0,scale:1},20)
 .fromTo('#product',{x:-780,y:0,scale:1},{x:-740,y:0,scale:.94,duration:.45,immediateRender:false},22)
 .fromTo('#hero h2',{y:36},{y:0,duration:.45,immediateRender:false},22)
-.fromTo('#product',{x:-740,y:0,scale:.94},{x:0,y:0,scale:1,duration:.65,immediateRender:false},25.5)
+// CTA cuts to a clear right-hand product pose before brand/copy are visible.
+.set('#product',{x:0,y:0,scale:1},25.5)
 .fromTo('#end img',{y:22},{y:0,duration:.45,immediateRender:false},25.5)
 .fromTo('.arrow',{scaleX:0},{scaleX:1,duration:.7,immediateRender:false},26)
 .to({},{duration:2.8},27.2);
