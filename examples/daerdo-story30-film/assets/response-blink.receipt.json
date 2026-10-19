@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-20",
+  "tool": "native image_gen.imagegen",
+  "mode": "edit",
+  "source_native_path": "/Users/luolimo/.codex/generated_images/01a154c5-833e-7281-9160-93defc36f319/exec-435e4872-b9fd-4167-b331-06a25b437230.png",
+  "reference": "/Volumes/data/huashu-motion-delivery/work/daerdo-story30-20261019/art/photoreal-response-v1.png",
+  "reference_sha256": "802f2fe891aacfdd9c63fa8b36ca6046ad6741c0af299da2f0ec77359b9ee411",
+  "output": "/Volumes/data/huashu-motion-delivery/work/daerdo-story30-20261019/art/photoreal-response-blink-v1.png",
+  "output_sha256": "6040c003899c95a4aaffa1697805e6c3a76e02c74fda818e0e32923ab3c58be5",
+  "dimensions": [
+    1672,
+    941
+  ],
+  "runs": 1,
+  "transparent_background": false,
+  "request": "Only naturally fully close mother two eyelids for blink; same identity head mouth hair son kitchen frame; no other changes. Full original native output retained.",
+  "acceptance": "E2 visual same shot and identity; eyelid region candidate only, no claim of pixel identical full frame. Composited motion remains NOT_RUN."
+}

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-composition-variables='[{"id":"model","type":"string","default":"G25BT"},{"id":"cta","type":"string","default":"Explore G25BT"},{"id":"call","type":"string","default":"Mom?"},{"id":"giftLine","type":"string","default":"A little something for you."},{"id":"reply","type":"string","default":"I hear you, darling."}]'>
 <head><meta charset="utf-8"><title>DAERDO · A little something</title>
-<!-- Photo-led kitchen story. Depends on local GSAP/OM, three approved hashed AI photographs
+<!-- Continuous photographic mesh kitchen story. Depends on local GSAP/OM, three approved hashed AI photographs
      and authentic official product assets. Called by story30 CI/capture/render.
      Invariants: deterministic seek, 30s/900 frames, no fabricated fitting or cure claim. -->
 <style>
@@ -37,18 +37,18 @@ V:PULSE inst=kalimba gain=0.13
 z4 | D z A z | D z A z | E z A z | F A d A | E F A F | F A d A | D F A F | G B e B | E A d A | F A d A | E F A F | D z A z | D z A z | D4 |
 V:BASS inst=sinebass gain=0.15
 D,4 | D,4 | D,4 | A,,4 | G,,4 | A,,4 | G,,4 | D,4 | G,,4 | A,,4 | D,4 | A,,4 | D,4 | D,4 | D,4 |
-</script></head>
+</script><script src="story-mesh.js"></script></head>
 <body><div id="film" data-composition-id="film" data-width="1920" data-height="1080" data-fps="30" data-duration="30">
-<section id="wash" class="scene" data-om-id="washing-establishing" data-layout-allow-occlusion><img id="wash-photo" class="photo" src="assets/wash.png" alt="AI dramatization: mother washing dishes while her son waits in the doorway" data-om-id="wash-photograph"><p class="caption" id="call-one" data-var-text="call" data-om-id="unheard-call-one">Mom?</p><p class="caption" id="call-two" data-var-text="call" data-om-id="unheard-call-two">Mom?</p><p class="disclosure" data-om-id="wash-disclosure">AI dramatization · Individual experiences vary.</p></section>
-<section id="gift" class="scene" data-om-id="gift-handover" data-layout-allow-occlusion><img id="gift-photo" class="photo" src="assets/gift.png" alt="AI dramatization: adult son and mother holding a closed white gift box together" data-om-id="gift-photograph"><p class="caption" id="gift-line" data-var-text="giftLine" data-om-id="gift-dialogue">A little something for you.</p><p class="disclosure" data-om-id="gift-disclosure">AI dramatization · Individual experiences vary.</p></section>
-<section id="response" class="scene" data-om-id="mother-response" data-layout-allow-occlusion><img id="response-photo" class="photo" src="assets/response.png" alt="AI dramatization: mother smiling toward her son in the same kitchen" data-om-id="response-photograph"><p id="later" data-om-id="time-ellipsis">A little later…</p><p class="caption" id="new-call" data-var-text="call" data-om-id="new-call">Mom?</p><p class="caption" id="reply" data-var-text="reply" data-om-id="mother-reply">I hear you, darling.</p><p class="disclosure" data-om-id="response-disclosure">AI dramatization · Individual experiences vary.</p></section>
+<section id="wash" class="scene" data-om-id="washing-establishing" data-layout-allow-occlusion><canvas id="wash-photo" class="photo" width="1920" height="1080" data-om-id="wash-photograph" aria-label="AI photographic wash scene with local character motion"></canvas><p class="caption" id="call-one" data-var-text="call" data-om-id="unheard-call-one">Mom?</p><p class="caption" id="call-two" data-var-text="call" data-om-id="unheard-call-two">Mom?</p><p class="disclosure" data-om-id="wash-disclosure">AI dramatization · Individual experiences vary.</p></section>
+<section id="gift" class="scene" data-om-id="gift-handover" data-layout-allow-occlusion><canvas id="gift-photo" class="photo" width="1920" height="1080" data-om-id="gift-photograph" aria-label="AI photographic gift scene with local character motion"></canvas><p class="caption" id="gift-line" data-var-text="giftLine" data-om-id="gift-dialogue">A little something for you.</p><p class="disclosure" data-om-id="gift-disclosure">AI dramatization · Individual experiences vary.</p></section>
+<section id="response" class="scene" data-om-id="mother-response" data-layout-allow-occlusion><canvas id="response-photo" class="photo" width="1920" height="1080" data-om-id="response-photograph" aria-label="AI photographic response scene with local character motion"></canvas><p id="later" data-om-id="time-ellipsis">A little later…</p><p class="caption" id="new-call" data-var-text="call" data-om-id="new-call">Mom?</p><p class="caption" id="reply" data-var-text="reply" data-om-id="mother-reply">I hear you, darling.</p><p class="disclosure" data-om-id="response-disclosure">AI dramatization · Individual experiences vary.</p></section>
 <section class="scene product" id="insert" data-om-id="authentic-product-insert"><div class="copy" id="insert-copy"><p class="eyebrow" data-om-id="insert-brand">DAERDO HEARING AIDS</p><h1 class="model" data-var-text="model" data-om-id="insert-model">G25BT</h1><p class="category" data-om-id="insert-category">Bluetooth BTE hearing aid.<br>Rechargeable.</p></div><img class="device" id="real-product" src="assets/g25bt.png" data-om-id="complete-g25bt" alt="Official complete G25BT hearing aid pair"><p id="insert-note" data-om-id="insert-note">Explore the product at daerdo.com</p></section>
 <section class="scene product" id="end" data-om-id="brand-endcard"><img id="wordmark" src="assets/wordmark.png" alt="DAERDO" data-om-id="official-wordmark"><h2 data-var-text="cta" data-om-id="end-cta">Explore G25BT</h2><p class="category" data-om-id="end-url">daerdo.com</p><div class="rule"></div><p class="eyebrow" data-om-id="end-category">BLUETOOTH BTE · RECHARGEABLE</p><img class="device" id="end-product" src="assets/g25bt.png" alt="Official complete G25BT hearing aid pair" data-om-id="end-g25bt"><p class="disclosure" data-om-id="end-disclosure">AI dramatization · Individual experiences vary.</p></section>
 </div><script>
 const tl=gsap.timeline({paused:true,defaults:{ease:'power2.inOut'}});
 for(const[id,t]of[['wash',0],['gift',7],['product',13],['response',17],['brand',25]])tl.addLabel('scene:'+id,t);
 // Modest crops keep complete faces and hands; different shot sizes/cuts carry the narrative.
-tl.fromTo('#wash-photo',{scale:1.08,x:58,y:24},{scale:1,x:0,y:0,duration:6.6,ease:'sine.out',immediateRender:false},0)
+tl.fromTo('#wash-photo',{scale:1.18,x:150,y:70},{scale:1,x:0,y:0,duration:6.6,ease:'sine.out',immediateRender:false},0)
 .set('#call-one',{opacity:1},1.5).set('#call-one',{opacity:0},3.3)
 .set('#call-two',{opacity:1},4.8).set('#call-two',{opacity:0},6.5)
 .set('#wash',{opacity:0},7).set('#gift',{opacity:1},7)
@@ -68,6 +68,7 @@ tl.fromTo('#wash-photo',{scale:1.08,x:58,y:24},{scale:1,x:0,y:0,duration:6.6,eas
 .fromTo('#end-product',{y:16,scale:.97},{y:0,scale:1,duration:.6,ease:'power3.out',immediateRender:false},25)
 .fromTo('#wordmark',{y:14},{y:0,duration:.5,ease:'power3.out',immediateRender:false},25)
 .to('.rule',{scaleX:1,duration:.5,ease:'power2.out'},25.5).to({},{duration:4},26);
+OM.clock(tl,t=>storyMesh.draw(t),30);
 OM.music({bpm:120,seed:25,marks:{wash:0,gift:7,product:13,response:17,brand:25}});
 for(const[name,t,gain,dur]of[['draw',.2,.06,.3],['draw',2.3,.05,.3],['paper',7,.10,.25],['slide',10.2,.06,.2],['chime',13.35,.12,.3],['paper',17,.05,.2],['ding',25.4,.10,.3]])OM.sfx(name,t,{gain,dur});
 window.__timelines.film=tl;

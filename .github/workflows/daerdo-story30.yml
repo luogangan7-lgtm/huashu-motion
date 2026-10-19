@@ -2,7 +2,7 @@
 name: DAERDO 30 second family story
 on:
   pull_request:
-    paths: ['examples/daerdo-story30-film/**', 'test/daerdo-story30.test.js', '.github/workflows/daerdo-story30.yml']
+    paths: ['examples/daerdo-story30-film/**', 'test/daerdo-story30.test.js', 'test/daerdo-story30-motion.test.js', '.github/workflows/daerdo-story30.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -47,7 +47,7 @@ jobs:
           ('navy.png','https://daerdo.com/daerdo/source/G25BT/isolated/G25BT-navy-exact-source-v2.png','ee3db821975dba15127aa5e08b6793c37bbd9a9a124e6be13bf80feac634d349'),
           ('inter.woff2','https://daerdo.com/_next/static/media/83afe278b6a6bb3c-s.2bn3s6zvc0dyp.woff2','c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4')]
           receipts=[]
-          for name in ('wash','gift','response'):
+          for name in ('wash','gift','response','response-blink'):
               data=(root/(name+'.png')).read_bytes()
               receipts.append({'name':name+'.png','sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'source':'committed AI-generated storyboard'})
           for name,url,expected in assets:
@@ -82,7 +82,7 @@ jobs:
       - name: Hardest hero and four actual keyframes before render
         run: |
           set -euo pipefail
-          node cli/om.js still examples/daerdo-story30-film --at 1.5,3.5,8.5,10.8,14.5,15.2,19.5,20.5,21.5,28 --out evidence/stills
+          node cli/om.js still examples/daerdo-story30-film --at .15,.65,1.5,3.5,8.5,10.8,15.2,19.5,20.45,20.72,20.98,21.5,28 --out evidence/stills
       - name: Upload first visual draft
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -107,7 +107,19 @@ jobs:
             esac
             echo "RED actual DOM story defect: $defect" | tee -a evidence/acceptance.txt
           done
-          timeout 12m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-story30.test.js 2>&1 | tee evidence/tests.tap
+          for defect in freeze-wash freeze-gift freeze-response freeze-blink; do
+            if DAERDO_STORY30_MOTION_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-story30-motion.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Frozen character unexpectedly passed: $defect"; exit 1; fi
+            grep -q '^# fail 1$' "evidence/red-$defect.tap"
+            grep -q '^# skipped 0$' "evidence/red-$defect.tap"
+            case "$defect" in
+              freeze-wash) grep -q 'actual local wash pixel motion' "evidence/red-$defect.tap";;
+              freeze-gift) grep -q 'actual local gift pixel motion' "evidence/red-$defect.tap";;
+              freeze-response) grep -q 'actual local response pixel motion' "evidence/red-$defect.tap";;
+              freeze-blink) grep -q 'actual eyelid pixel blink' "evidence/red-$defect.tap";;
+            esac
+            echo "RED actual raster motion freeze: $defect" | tee -a evidence/acceptance.txt
+          done
+          timeout 12m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-story30.test.js test/daerdo-story30-motion.test.js 2>&1 | tee evidence/tests.tap
           if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then exit 1; fi
       - name: Scan and render real film
         run: |
@@ -139,7 +151,13 @@ jobs:
           verify evidence/probe.json
           ffmpeg -v error -xerror -i "$film" -f null - 2> evidence/decode.log
           ffmpeg -v error -i "$film" -vf 'fps=1/2,scale=480:-1,tile=5x3' -frames:v 1 evidence/contact-sheet.png
-          for at in 0 1.5 3.5 6.9 7 8.5 10.8 12.9 13 14.5 16.9 17 19.5 21.5 24.9 25 25.1 25.6 28 29.96; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
+          for at in 0 1.5 3.5 6.9 7 8.5 10.8 12.9 13 14.5 16.9 17 19.5 20.45 20.72 20.98 21.5 24.9 25 25.1 25.6 28 29.96; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';import {decodePng} from './cli/lib/check.js';
+          const rows=[];
+          for(const t of [1.5,3.5,8.5,10.8,19.5,20.72,21.5]){const p=decodePng(readFileSync(`evidence/frames/at-${t}.png`));let black=0,total=0;for(let y=33;y<78;y+=2)for(let x=1520;x<1876;x+=2){const i=(y*p.width+x)*4;total++;if(p.px[i]<8&&p.px[i+1]<8&&p.px[i+2]<8)black++}const fraction=black/total;rows.push({time:t,upperRightBlackFraction:fraction});if(fraction>=.01)throw Error('Encoded DOM compositor rectangle at '+t)}
+          writeFileSync('evidence/encoded-compositor.json',JSON.stringify(rows,null,2));
+          JS
           ffmpeg -v error -i "$film" -lavfi 'showspectrumpic=s=1600x400:legend=0:scale=log:fscale=log' -frames:v 1 evidence/sound-spectrum.png
           ffmpeg -hide_banner -i "$film" -af volumedetect -f null - 2> evidence/loudness.txt
           ffmpeg -hide_banner -i "$film" -af ebur128=peak=true -f null - 2> evidence/lufs.txt
