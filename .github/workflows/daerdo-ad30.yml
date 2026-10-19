@@ -125,10 +125,15 @@ jobs:
           cp "$film" evidence/daerdo-ad30-film.mp4
           ffprobe -v error -count_frames -show_streams -show_format -of json "$film" > evidence/probe.json
           verify() { jq -e '([.streams[]|select(.codec_type=="video")][0]|.codec_name=="h264" and .width==1920 and .height==1080 and .pix_fmt=="yuv420p" and .nb_read_frames=="900" and .r_frame_rate=="30/1") and any(.streams[];.codec_type=="audio" and .codec_name=="aac") and ((.format.duration|tonumber)-30|fabs)<0.1' "$1" >/dev/null; }
-          jq '(.streams[]|select(.codec_type=="video")|.width)=1919' evidence/probe.json > evidence/probe-mutant.json
+          mkdir -p evidence/negative-controls
+          ffmpeg -v error -i "$film" -vf scale=1918:1080 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -c:a copy evidence/negative-controls/wrong-width.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json evidence/negative-controls/wrong-width.mp4 > evidence/probe-mutant.json
+          jq -e 'any(.streams[];.codec_type=="video" and .width==1918) and ((.format.duration|tonumber)-30|fabs)<0.1' evidence/probe-mutant.json >/dev/null
           if verify evidence/probe-mutant.json; then exit 1; fi
           echo 'RED wrong encoded width' | tee -a evidence/acceptance.txt
-          jq '.format.duration="29.0"' evidence/probe.json > evidence/probe-duration-mutant.json
+          ffmpeg -v error -i "$film" -t 29 -c copy evidence/negative-controls/wrong-duration.mp4
+          ffprobe -v error -count_frames -show_streams -show_format -of json evidence/negative-controls/wrong-duration.mp4 > evidence/probe-duration-mutant.json
+          jq -e 'any(.streams[];.codec_type=="video" and .width==1920) and (.format.duration|tonumber)<29.2' evidence/probe-duration-mutant.json >/dev/null
           if verify evidence/probe-duration-mutant.json; then exit 1; fi
           echo 'RED wrong encoded duration' | tee -a evidence/acceptance.txt
           verify evidence/probe.json
