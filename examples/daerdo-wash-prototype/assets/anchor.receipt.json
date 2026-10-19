@@ -1,0 +1,15 @@
+{
+  "kind": "photoreal-reference",
+  "evidenceLevel": "E2 static sample only",
+  "humanRequirement": "生成真人",
+  "file": "art/photoreal-anchor-v1.png",
+  "sha256": "8e1fb322fff00a122097097bffa8396c1f6ec747ec8ba6dcc24b65ac2a13e9df",
+  "nativeSource": "/Users/luolimo/.codex/generated_images/01a153d1-a14e-7383-9b6b-a81206b11484/exec-17dc80fe-0455-47af-96ad-4f6b1d55f83f.png",
+  "prompt": "Use case: photorealistic-natural. Create a cinematic live-action photograph to serve as an image-to-video starting frame for a 30-second hearing-aid family advertisement. Landscape16:9 frame, realistic unretouched human skin, natural wrinkles, individual hair strands, slight organic film grain, no illustration/cartoon/painting/CGI. Candid warm afternoon in an authentic modest bright American or European home kitchen. In the foreground center-left a Western Caucasian woman about73, short softly waved silver hair, navy cotton cardigan over a cream shirt and a soft muted terracotta apron, stands at a real kitchen sink washing a white ceramic dinner plate with a small yellow sponge under a thin running faucet. Both hands and the plate visible in a physically believable washing position; she is looking down concentrating on the dish, face in a clear3/4profile turned slightly toward the right. At the far right in an open doorway, her adult son around40 is quietly entering, Western Caucasian with short chestnut hair, light stubble, sage-green casual cotton shirt, a small plain white gift box with a navy ribbon held close to his waist. He looks toward his mother with gentle concern and affection. Keep both faces individually readable and naturally different generations. No actors looking at camera. Normal body and hand anatomy, natural relaxed expressions. Camera eye level medium-wide35mm lens, honest documentary-inspired commercial cinematography, sunlight from left window, softly detailed blue-and-white kitchen, warm wooden counter, real depth of field but both main actors identifiable. Make room to the right so son can approach her. Not a medical demonstration. NO hearing aid or medical device anywhere in this frame. No on-ear object. No logos, text, subtitles, watermark, vignettes, split panels, collage, overly perfect glamour, beauty smoothing or glowing magic. This is a continuous lifelike film scene, not a stock family portrait.",
+  "limitations": [
+    "Not a motion clip",
+    "AI characters, not actual customers",
+    "No fitting/skin contact device generation"
+  ],
+  "charterMemoryId": "191c0d44-4ac5-489a-adc8-775dc3101d51"
+}

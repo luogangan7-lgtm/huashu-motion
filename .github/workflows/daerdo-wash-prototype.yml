@@ -1,5 +1,5 @@
-# Focused photographic rig experiment. Reuses the repository capture/render tools unchanged.
-name: DAERDO 3 second washing movement
+# Focused continuous photographic mesh experiment. Reuses the repository capture/render tools unchanged.
+name: DAERDO 3 second continuous mesh washing
 on:
   pull_request:
     paths: ['examples/daerdo-wash-prototype/**', 'test/daerdo-wash-prototype.test.js', '.github/workflows/daerdo-wash-prototype.yml']
@@ -35,7 +35,7 @@ jobs:
           git rev-parse HEAD | tee evidence/source-sha.txt
           git rev-parse HEAD^{tree} | tee evidence/source-tree.txt
           sha256sum examples/daerdo-wash-prototype/assets/* > evidence/ASSET-SHA256SUMS
-      - name: Five actual joint and contact keyframes
+      - name: Five actual continuous texture keyframes
         run: node cli/om.js still examples/daerdo-wash-prototype --at 0.15,0.65,1.25,1.85,2.65 --out evidence/stills
       - name: Upload first movement draft
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -46,19 +46,15 @@ jobs:
             evidence/source-sha.txt
             evidence/ASSET-SHA256SUMS
           retention-days: 7
-      - name: Real arm and tool freeze RED then restored GREEN
+      - name: Actual field pixel freeze RED then restored GREEN
         run: |
           set -euo pipefail
-          for defect in freeze-arm freeze-tool; do
-            if DAERDO_WASH_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-wash-prototype.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
-            grep -q 'not ok .*Daerdo wash prototype' "evidence/red-$defect.tap"
-            grep -q '^# fail 1$' "evidence/red-$defect.tap"
-            case "$defect" in
-              freeze-arm) grep -q 'actual sponge scrub path varies' "evidence/red-$defect.tap";;
-              freeze-tool) grep -q 'shared elbow remains connected' "evidence/red-$defect.tap";;
-            esac
-            echo "RED actual rendered $defect" | tee -a evidence/acceptance.txt
-          done
+          defect=freeze-field
+          if DAERDO_WASH_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-wash-prototype.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
+          grep -q 'not ok .*Daerdo wash prototype' "evidence/red-$defect.tap"
+          grep -q '^# fail 1$' "evidence/red-$defect.tap"
+          grep -q 'actual hand and sponge pixel motion' "evidence/red-$defect.tap"
+          echo 'RED actual rendered continuous field frozen' | tee -a evidence/acceptance.txt
           timeout 8m node --test --test-concurrency=1 --test-reporter=tap test/package.test.js test/project.test.js test/render.test.js test/check.test.js test/daerdo-wash-prototype.test.js 2>&1 | tee evidence/tests.tap
           if grep -Eq '^# (skipped|fail) [1-9]' evidence/tests.tap; then exit 1; fi
       - name: Original scan and actual prototype render
@@ -78,7 +74,7 @@ jobs:
           for at in 0.15 0.65 1.25 1.85 2.65; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
           ffmpeg -v error -i "$film" -vf 'fps=5/3,scale=480:-1,tile=5x1' -frames:v 1 evidence/contact-sheet.png
           sha256sum evidence/daerdo-wash-prototype.mp4 examples/daerdo-wash-prototype/index.html evidence/probe.json > evidence/SHA256SUMS
-          echo 'GREEN articulated motion, fixed references, 90 frames, 3s, full decode. Appearance review pending.' | tee -a evidence/acceptance.txt
+          echo 'GREEN continuous texture motion, fixed references, 90 frames, 3s, full decode. Appearance review pending.' | tee -a evidence/acceptance.txt
       - name: Upload actual prototype and raw evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
