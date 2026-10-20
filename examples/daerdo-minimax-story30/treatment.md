@@ -1,6 +1,6 @@
 # DAERDO — A familiar voice
 
-Status: edit plan for the new MiniMax footage; source metadata for gift and response remains pending GitHub probe. This document does not claim that the full film has been rendered or reviewed.
+Status: parent-approved edit plan for the new MiniMax footage. Each of wash, gift and response has independently passed GitHub source hash/probe/full decode: 1918×1080, 24 fps, 141 frames, 5.875 seconds, timebase 1/12288, no audio. Gift and response discovery run `39366420795@289d939a` supplied their actual metadata; full-film acceptance remains pending.
 
 ## Authority and delivery
 
@@ -27,13 +27,13 @@ Let `W`, `G`, `R` be the verified usable source durations. Play each source once
 | `W+G+4+R → 25` | Official product / quiet brand bridge, with a deliberate detail-to-pair reveal. This absorbs real source-duration differences without freezing a person. | “Closer to everyday moments.” No additional CTA. | Musical resolution and a small breathing space before the endcard. |
 | `25 → 30` | White/navy endcard: official wordmark, real G25BT pair, one legible CTA. | “Hear what matters.” / “Explore G25BT” / `daerdo.com` | Score resolves, clean tail through frame 899. |
 
-For the common case where all three sources are 5.875s, the boundaries become 0 / 5.875 / 11.75 / 15.75 / 21.625 / 25 / 30. This is a planning example, not assumed metadata for the two pending files. If an accepted clip has a shorter usable performance, shorten its source window and give the freed time to the informative product bridge. If any performance is unusable, report the specific defect and available window before expanding the edit.
+All three independently probed sources are 5.875s, so the implementation boundaries are 0 / 5.875 / 11.75 / 15.75 / 21.625 / 25 / 30. Father viewed the gift/response contact sheets and representative actual full frames with no sampled P1, and retained the original medium-wide gift framing. If a later review finds a shorter usable performance, shorten its source window and give the freed time to the informative product bridge. Report the specific defect; do not conceal it with actor-frame holds.
 
 ## Continuity, typography and disclosure
 
 Keep the same silver-haired mother in navy cardigan / terracotta apron, olive-shirted adult son, warm blue kitchen and closed white gift with navy ribbon. Use cover-fit without stretching; the wash source is genuinely 1918×1080. Product imagery is always the pinned official G25BT PNG, never an AI-rendered aid in a hand or ear.
 
-Reuse the existing Inter typography, navy/white product system, official wordmark, score and modular subtitle/endcard design. Narrative text stays out of faces, plate, sponge and box contact areas. One readable `AI dramatization` label remains visible during generated footage, with `Individual experiences vary.` on the product/end section. No repeated paragraph overlays. Subtitle safe zones and actual rendered disclosure are checked in the output, not inferred from CSS.
+Reuse the existing Inter typography, navy/white product system, official wordmark, score and modular subtitle/endcard design. Narrative text stays out of faces, plate, sponge and box contact areas: the wash call and gift line use the son's shirt/negative space above the hands; the response subtitle uses the lower frame below the faces. Calls consistently use British English “Mum?”. One readable `AI dramatization` label remains visible during generated footage, with `Individual experiences vary.` on the product/end section. No repeated paragraph overlays. Subtitle safe zones and actual rendered disclosure are checked in the output, not inferred from CSS.
 
 ## Minimal implementation and acceptance
 

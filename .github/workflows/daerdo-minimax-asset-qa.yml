@@ -30,13 +30,13 @@ jobs:
         run: |
           python3 examples/daerdo-minimax-story30/asset-qa.py inspect --file examples/daerdo-minimax-story30/assets/wash.mp4 --manifest examples/daerdo-minimax-story30/assets/wash-source.json --out evidence
           for clip in gift response; do
-            python3 examples/daerdo-minimax-story30/asset-qa.py discover --file "examples/daerdo-minimax-story30/assets/$clip.mp4" --manifest "examples/daerdo-minimax-story30/assets/$clip-source.json" --out "evidence/$clip"
+            python3 examples/daerdo-minimax-story30/asset-qa.py inspect --file "examples/daerdo-minimax-story30/assets/$clip.mp4" --manifest "examples/daerdo-minimax-story30/assets/$clip-source.json" --out "evidence/$clip"
           done
       - name: Upload actual first asset frames
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: daerdo-minimax-wash-frames-${{ github.event.pull_request.head.sha || github.sha }}
+          name: daerdo-minimax-source-frames-${{ github.event.pull_request.head.sha || github.sha }}
           path: evidence/
           retention-days: 7
       - name: Wrong manifest duration and frame count RED then exact metadata GREEN
@@ -57,19 +57,24 @@ jobs:
       - name: Genuine frozen video RED then original video GREEN
         run: |
           set -euo pipefail
-          python3 examples/daerdo-minimax-story30/asset-qa.py freeze --file examples/daerdo-minimax-story30/assets/wash.mp4 --out evidence/frozen-wash.mp4
-          if python3 examples/daerdo-minimax-story30/asset-qa.py motion --file evidence/frozen-wash.mp4 --out evidence/frozen-motion.json > evidence/red-freeze.log 2>&1; then
-            echo 'Frozen real video unexpectedly passed'; exit 1
-          fi
-          grep -q '^ASSET_QA_FAIL: actual hand and sponge pixel motion$' evidence/red-freeze.log
-          echo 'RED actual frozen MP4 hand/sponge pixels' >> evidence/acceptance.txt
-          python3 examples/daerdo-minimax-story30/asset-qa.py motion --file examples/daerdo-minimax-story30/assets/wash.mp4 --out evidence/motion.json > evidence/green-motion.log 2>&1
-          echo 'GREEN original MP4 hand/sponge pixels. Independent appearance review pending.' >> evidence/acceptance.txt
+          for clip in wash gift response; do
+            python3 examples/daerdo-minimax-story30/asset-qa.py freeze --file "examples/daerdo-minimax-story30/assets/$clip.mp4" --out "evidence/frozen-$clip.mp4"
+            if python3 examples/daerdo-minimax-story30/asset-qa.py motion --role "$clip" --file "evidence/frozen-$clip.mp4" --out "evidence/frozen-$clip-motion.json" > "evidence/red-freeze-$clip.log" 2>&1; then
+              echo "Frozen real $clip video unexpectedly passed"; exit 1
+            fi
+            case "$clip" in
+              wash) grep -q '^ASSET_QA_FAIL: actual hand and sponge pixel motion$' "evidence/red-freeze-$clip.log";;
+              *) grep -q "^ASSET_QA_FAIL: actual $clip subject pixel motion$" "evidence/red-freeze-$clip.log";;
+            esac
+            echo "RED actual frozen $clip MP4 subject pixels" >> evidence/acceptance.txt
+            python3 examples/daerdo-minimax-story30/asset-qa.py motion --role "$clip" --file "examples/daerdo-minimax-story30/assets/$clip.mp4" --out "evidence/$clip-motion.json" > "evidence/green-$clip-motion.log" 2>&1
+          done
+          echo 'GREEN three original video subject pixels. Independent full-film review pending.' >> evidence/acceptance.txt
       - name: Upload raw asset evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: daerdo-minimax-wash-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          name: daerdo-minimax-source-qa-${{ github.event.pull_request.head.sha || github.sha }}
           path: evidence/
           retention-days: 7
           if-no-files-found: error

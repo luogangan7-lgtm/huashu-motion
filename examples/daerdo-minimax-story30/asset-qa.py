@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Owns first MiniMax wash asset QA, not rendering or model generation.
+"""Owns MiniMax source and encoded subject-motion QA, not model generation.
 Uses GitHub-hosted ffmpeg/ffprobe + Python stdlib; called by focused asset workflow.
 Invariant: freeze RED changes real video frames; original clip must pass the same motion assertion.
 """
@@ -26,15 +26,18 @@ def delta(a, b):
     assert len(a) == len(b) == 4096, 'decoded action ROI must contain a complete real frame'
     return sum(abs(x-y) for x, y in zip(a, b)) / len(a)
 
-def motion(file, out):
+def motion(file, out, role='wash', offset=0):
+    action = {'wash': ROIS['hands_sponge'], 'gift': [.30, .57, .37, .34], 'response': [.15, .08, .30, .43]}[role]
+    rois = {'action': action, 'kitchen': ROIS['kitchen']}
     metrics = {}
-    for name, roi in ROIS.items():
-        frames = [pixels(file, t, roi) for t in TIMES]
+    for name, roi in rois.items():
+        frames = [pixels(file, t + offset, roi) for t in TIMES]
         metrics[name] = {'roi': roi, 'fromFirst': [delta(frames[0], a) for a in frames], 'adjacent': [delta(a, b) for a, b in zip(frames, frames[1:])]}
-    out.write_text(json.dumps({'times': TIMES, 'metrics': metrics}, indent=2))
-    hand = metrics['hands_sponge']
-    assert max(hand['fromFirst']) > 2 and sum(d > 1 for d in hand['adjacent']) >= 2, 'actual hand and sponge pixel motion'
-    print('DYNAMIC_GATE_GREEN actual hand and sponge pixel motion')
+    out.write_text(json.dumps({'role': role, 'offset': offset, 'times': TIMES, 'metrics': metrics}, indent=2))
+    hand = metrics['action']
+    message = 'actual hand and sponge pixel motion' if role == 'wash' else f'actual {role} subject pixel motion'
+    assert max(hand['fromFirst']) > 2 and sum(d > 1 for d in hand['adjacent']) >= 2, message
+    print('DYNAMIC_GATE_GREEN '+message)
 
 def metadata(probe, expected):
     video = next(s for s in probe['streams'] if s['codec_type'] == 'video')
@@ -84,6 +87,8 @@ if __name__ == '__main__':
     p.add_argument('--file', required=True, type=Path)
     p.add_argument('--manifest', type=Path)
     p.add_argument('--out', required=True, type=Path)
+    p.add_argument('--role', choices=['wash', 'gift', 'response'], default='wash')
+    p.add_argument('--offset', type=float, default=0)
     a = p.parse_args()
     try:
         if a.action == 'inspect':
@@ -93,7 +98,7 @@ if __name__ == '__main__':
         elif a.action == 'metadata':
             metadata(json.loads(a.file.read_text()), json.loads(a.manifest.read_text()))
         elif a.action == 'motion':
-            motion(a.file, a.out)
+            motion(a.file, a.out, a.role, a.offset)
         else:
             freeze(a.file, a.out)
     except (AssertionError, subprocess.CalledProcessError, ValueError, KeyError) as e:
