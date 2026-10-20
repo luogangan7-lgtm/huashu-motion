@@ -1,0 +1,13 @@
+# First MiniMax source asset — candidate acceptance
+
+This is an inert authoring draft. No local build, test, render, ffprobe or ffmpeg execution has been performed. Parent authorized one source commit after the actual wash MP4 arrived. Original source is 1918×1080, 2,335,256 bytes; the gate preserves that exact size. Final 1920×1080 composition will use object-fit cover, not stretch.
+
+Input manifest: `task_id`, `model`, `input_sha256`, `sha256`, `duration_requested`, `resolution_requested`. No API keys, signed output URLs, tokens, account identifiers or full raw HTTP headers enter GitHub. The root retains original receipts separately.
+
+The focused workflow reuses pinned checkout/upload actions and GitHub-hosted FFmpeg. It produces the requested exact eight source frames, a contact sheet, ffprobe, complete decode, source/code hashes and source action-ROI metrics. It creates a genuine six-second MP4 containing repeated first-frame pixels, runs the unchanged motion assertion against that file (must RED), then against the original (must GREEN). This is separate from input-hash validation, so a hash rejection cannot masquerade as a motion failure.
+
+The hand ROI is provisional until these real frames are inspected. Mean grayscale change above 2 and at least two adjacent intervals above 1 establish nonfrozen pixels only. Kitchen and face differences are reported, not made falsely invariant for generative footage. Inspect the actual source for camera movement, sponge-to-plate contact, fingers, identity, persistent plate geometry and water flow; water/background motion cannot substitute for the hand action. A motion gate cannot certify natural acting.
+
+Full-film candidate: wash 0–6, gift 6–12, authentic product 12–16, response 16–22, official-product information bridge 22–25, brand end 25–30. All three real clips run at rate 1 with no frozen tail or slow motion. Three timed native video elements replace the old mesh canvases; huashu-motion supplies subtitles, readable AI dramatization disclosure, score, transitions and authentic G25BT visuals. Source video is explicitly muted; no generated dialogue voice is introduced. The 22–25 bridge explains Bluetooth BTE/rechargeable with product details, and the single CTA closes the film. Timing follows the actual completed actions.
+
+Independent source-frame review precedes full-film acceptance. Normal-speed continuous watching and listening remain NOT_RUN unless actually performed. Existing full-film current-SHA, 30s/900-frame/H264/AAC/decode/audio/text/encoded-compositor checks remain required after integration. Historical 4ebfa9b green does not cover new footage.
