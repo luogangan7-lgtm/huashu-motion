@@ -108,7 +108,7 @@ jobs:
       - name: Actual visual defect RED controls then GREEN
         run: |
           set -euo pipefail
-          for defect in replace-gift hide-response; do
+          for defect in replace-gift hide-response black-rectangle; do
             if DAERDO_MINIMAX_MUTATION="$defect" node --test --test-reporter=tap test/daerdo-minimax-story30.test.js > "evidence/red-$defect.tap" 2>&1; then echo "Defect unexpectedly passed: $defect"; exit 1; fi
             grep -q 'not ok .*Daerdo MiniMax' "evidence/red-$defect.tap"
             grep -q '^# fail 1$' "evidence/red-$defect.tap"
@@ -116,6 +116,7 @@ jobs:
             case "$defect" in
               replace-gift) grep -q 'correct original story video: gift' "evidence/red-$defect.tap";;
               hide-response) grep -q 'visible story video: response' "evidence/red-$defect.tap";;
+              black-rectangle) grep -q 'no encoded-style black compositor rectangle' "evidence/red-$defect.tap";;
             esac
             echo "RED actual DOM story defect: $defect" | tee -a evidence/acceptance.txt
           done
@@ -154,8 +155,9 @@ jobs:
           for at in 0 1.5 3.5 5.86 5.875 6.5 8.275 11.73 11.75 13.5 15.73 15.75 16.55 18.95 21.25 21.6 21.625 23 24.97 25 25.6 28 29.96; do ffmpeg -v error -ss "$at" -i "$film" -frames:v 1 "evidence/frames/at-$at.png"; done
           node --input-type=module <<'JS'
           import {readFileSync,writeFileSync} from 'node:fs';import {decodePng} from './cli/lib/check.js';
+          import {blackRectangle} from './examples/daerdo-minimax-story30/black-rectangle.js';
           const rows=[];
-          for(const t of [1.5,3.5,6.5,8.275,16.55,18.95,21.25]){const p=decodePng(readFileSync(`evidence/frames/at-${t}.png`));let black=0,total=0;for(let y=33;y<78;y+=2)for(let x=1520;x<1876;x+=2){const i=(y*p.width+x)*4;total++;if(p.px[i]<8&&p.px[i+1]<8&&p.px[i+2]<8)black++}const fraction=black/total;rows.push({time:t,upperRightBlackFraction:fraction});if(fraction>=.01)throw Error('Encoded DOM compositor rectangle at '+t)}
+          for(const t of [1.5,3.5,6.5,8.275,16.55,18.95,21.25]){const p=decodePng(readFileSync(`evidence/frames/at-${t}.png`)),stats=blackRectangle(p);rows.push({time:t,...stats});if(stats.rectangle)throw Error('Encoded DOM compositor rectangle at '+t)}
           writeFileSync('evidence/encoded-compositor.json',JSON.stringify(rows,null,2));
           JS
           # Check the final encoded subject pixels, not only HTML or source movement.
