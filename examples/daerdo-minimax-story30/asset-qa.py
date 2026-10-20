@@ -45,7 +45,7 @@ def metadata(probe, expected):
     assert video['time_base'] == expected['source_time_base'], 'exact genuine source time base'
     print('METADATA_GATE_GREEN actual source metadata')
 
-def inspect(file, manifest, out):
+def inspect(file, manifest, out, verify_metadata=True):
     out.mkdir(parents=True, exist_ok=True)
     expected = json.loads(manifest.read_text())
     digest = hashlib.sha256(file.read_bytes()).hexdigest()
@@ -63,14 +63,24 @@ def inspect(file, manifest, out):
         run(['ffmpeg', '-v', 'error', '-y', '-ss', str(t), '-i', str(file), '-frames:v', '1', str(frames/f'at-{t}.png')])
     run(['ffmpeg', '-v', 'error', '-y', '-i', str(file), '-vf', 'fps=4/3,scale=480:-1,tile=4x2', '-frames:v', '1', str(out/'contact-sheet.png')])
     (out/'source-sha256.txt').write_text(digest+'\n')
-    metadata(probe, expected)
+    if verify_metadata:
+        metadata(probe, expected)
+    else:
+        # Discovery is not metadata acceptance: persist the genuine probe-bound
+        # fields for the next reviewed source manifest, rather than guessing 6s.
+        expected.update(width=video['width'], height=video['height'],
+                        source_duration=float(probe['format']['duration']),
+                        source_frames=int(video['nb_read_frames']),
+                        source_fps=video['avg_frame_rate'], source_time_base=video['time_base'])
+        (out/'discovered-source.json').write_text(json.dumps(expected, indent=2))
+        print('DISCOVERY_ONLY actual source frames and metadata; final manifest acceptance pending')
 
 def freeze(file, output):
     run(['ffmpeg', '-v', 'error', '-y', '-i', str(file), '-vf', 'trim=end_frame=1,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=6', '-t', '6', '-r', '30', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(output)])
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('action', choices=['inspect', 'motion', 'freeze', 'metadata'])
+    p.add_argument('action', choices=['inspect', 'discover', 'motion', 'freeze', 'metadata'])
     p.add_argument('--file', required=True, type=Path)
     p.add_argument('--manifest', type=Path)
     p.add_argument('--out', required=True, type=Path)
@@ -78,6 +88,8 @@ if __name__ == '__main__':
     try:
         if a.action == 'inspect':
             inspect(a.file, a.manifest, a.out)
+        elif a.action == 'discover':
+            inspect(a.file, a.manifest, a.out, verify_metadata=False)
         elif a.action == 'metadata':
             metadata(json.loads(a.file.read_text()), json.loads(a.manifest.read_text()))
         elif a.action == 'motion':

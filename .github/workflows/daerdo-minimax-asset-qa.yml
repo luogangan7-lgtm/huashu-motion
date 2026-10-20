@@ -29,6 +29,9 @@ jobs:
       - name: Actual input frames, probe and complete decode
         run: |
           python3 examples/daerdo-minimax-story30/asset-qa.py inspect --file examples/daerdo-minimax-story30/assets/wash.mp4 --manifest examples/daerdo-minimax-story30/assets/wash-source.json --out evidence
+          for clip in gift response; do
+            python3 examples/daerdo-minimax-story30/asset-qa.py discover --file "examples/daerdo-minimax-story30/assets/$clip.mp4" --manifest "examples/daerdo-minimax-story30/assets/$clip-source.json" --out "evidence/$clip"
+          done
       - name: Upload actual first asset frames
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

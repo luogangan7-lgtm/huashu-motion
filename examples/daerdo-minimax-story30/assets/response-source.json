@@ -1,0 +1,10 @@
+{
+  "task_id": "454307977601292",
+  "file_id": "454308285178148",
+  "sha256": "7b64f8b7f2d9849fe3edc05fa1f01b151587cad47bb47afddd716b17665763be",
+  "bytes": 1234534,
+  "model": "MiniMax-Hailuo-2.3",
+  "input_sha256": "802f2fe891aacfdd9c63fa8b36ca6046ad6741c0af299da2f0ec77359b9ee411",
+  "duration_requested": 6,
+  "resolution_requested": "1080P"
+}
