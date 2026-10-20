@@ -46,8 +46,9 @@ def inspect(file, manifest, out):
     (out/'probe.json').write_text(json.dumps(probe, indent=2))
     video = next(s for s in probe['streams'] if s['codec_type'] == 'video')
     assert (video['width'], video['height']) == (expected['width'], expected['height']) == (1918, 1080), 'exact original 1918x1080 source; no stretch'
-    assert 5.9 <= float(probe['format']['duration']) <= 6.2, 'six seconds of genuine source footage'
-    assert int(video['nb_read_frames']) > 100, 'source contains decoded frames'
+    assert float(probe['format']['duration']) == expected['source_duration'] == 5.875, 'exact genuine source duration; requested 6s is not actual duration'
+    assert int(video['nb_read_frames']) == expected['source_frames'] == 141, 'exact genuine decoded source frames'
+    assert video['avg_frame_rate'] == expected['source_fps'] == '24/1', 'exact genuine source frame rate'
     result = subprocess.run(['ffmpeg', '-v', 'error', '-xerror', '-i', str(file), '-f', 'null', '-'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out/'decode.log').write_bytes(result.stderr)
     assert result.returncode == 0, 'complete source decode'

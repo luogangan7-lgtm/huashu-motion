@@ -8,5 +8,8 @@
   "duration_requested": 6,
   "resolution_requested": "1080P",
   "width": 1918,
-  "height": 1080
+  "height": 1080,
+  "source_duration": 5.875,
+  "source_frames": 141,
+  "source_fps": "24/1"
 }
