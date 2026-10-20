@@ -36,6 +36,15 @@ def motion(file, out):
     assert max(hand['fromFirst']) > 2 and sum(d > 1 for d in hand['adjacent']) >= 2, 'actual hand and sponge pixel motion'
     print('DYNAMIC_GATE_GREEN actual hand and sponge pixel motion')
 
+def metadata(probe, expected):
+    video = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    assert (video['width'], video['height']) == (expected['width'], expected['height']), 'exact original source dimensions; no stretch'
+    assert float(probe['format']['duration']) == expected['source_duration'], 'exact genuine source duration'
+    assert int(video['nb_read_frames']) == expected['source_frames'], 'exact genuine decoded source frames'
+    assert video['avg_frame_rate'] == expected['source_fps'], 'exact genuine source frame rate'
+    assert video['time_base'] == expected['source_time_base'], 'exact genuine source time base'
+    print('METADATA_GATE_GREEN actual source metadata')
+
 def inspect(file, manifest, out):
     out.mkdir(parents=True, exist_ok=True)
     expected = json.loads(manifest.read_text())
@@ -45,10 +54,6 @@ def inspect(file, manifest, out):
     probe = json.loads(run(['ffprobe', '-v', 'error', '-count_frames', '-show_streams', '-show_format', '-of', 'json', str(file)]))
     (out/'probe.json').write_text(json.dumps(probe, indent=2))
     video = next(s for s in probe['streams'] if s['codec_type'] == 'video')
-    assert (video['width'], video['height']) == (expected['width'], expected['height']) == (1918, 1080), 'exact original 1918x1080 source; no stretch'
-    assert float(probe['format']['duration']) == expected['source_duration'] == 5.875, 'exact genuine source duration; requested 6s is not actual duration'
-    assert int(video['nb_read_frames']) == expected['source_frames'] == 141, 'exact genuine decoded source frames'
-    assert video['avg_frame_rate'] == expected['source_fps'] == '24/1', 'exact genuine source frame rate'
     result = subprocess.run(['ffmpeg', '-v', 'error', '-xerror', '-i', str(file), '-f', 'null', '-'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out/'decode.log').write_bytes(result.stderr)
     assert result.returncode == 0, 'complete source decode'
@@ -58,13 +63,14 @@ def inspect(file, manifest, out):
         run(['ffmpeg', '-v', 'error', '-y', '-ss', str(t), '-i', str(file), '-frames:v', '1', str(frames/f'at-{t}.png')])
     run(['ffmpeg', '-v', 'error', '-y', '-i', str(file), '-vf', 'fps=4/3,scale=480:-1,tile=4x2', '-frames:v', '1', str(out/'contact-sheet.png')])
     (out/'source-sha256.txt').write_text(digest+'\n')
+    metadata(probe, expected)
 
 def freeze(file, output):
     run(['ffmpeg', '-v', 'error', '-y', '-i', str(file), '-vf', 'trim=end_frame=1,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=6', '-t', '6', '-r', '30', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(output)])
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('action', choices=['inspect', 'motion', 'freeze'])
+    p.add_argument('action', choices=['inspect', 'motion', 'freeze', 'metadata'])
     p.add_argument('--file', required=True, type=Path)
     p.add_argument('--manifest', type=Path)
     p.add_argument('--out', required=True, type=Path)
@@ -72,6 +78,8 @@ if __name__ == '__main__':
     try:
         if a.action == 'inspect':
             inspect(a.file, a.manifest, a.out)
+        elif a.action == 'metadata':
+            metadata(json.loads(a.file.read_text()), json.loads(a.manifest.read_text()))
         elif a.action == 'motion':
             motion(a.file, a.out)
         else:

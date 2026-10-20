@@ -11,5 +11,6 @@
   "height": 1080,
   "source_duration": 5.875,
   "source_frames": 141,
-  "source_fps": "24/1"
+  "source_fps": "24/1",
+  "source_time_base": "1/12288"
 }

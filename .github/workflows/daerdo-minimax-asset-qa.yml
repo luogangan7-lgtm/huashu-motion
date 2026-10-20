@@ -30,11 +30,27 @@ jobs:
         run: |
           python3 examples/daerdo-minimax-story30/asset-qa.py inspect --file examples/daerdo-minimax-story30/assets/wash.mp4 --manifest examples/daerdo-minimax-story30/assets/wash-source.json --out evidence
       - name: Upload actual first asset frames
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: daerdo-minimax-wash-frames-${{ github.event.pull_request.head.sha || github.sha }}
           path: evidence/
           retention-days: 7
+      - name: Wrong manifest duration and frame count RED then exact metadata GREEN
+        run: |
+          set -euo pipefail
+          for key in source_duration source_frames; do
+            python3 -c 'import json,sys; p="examples/daerdo-minimax-story30/assets/wash-source.json"; d=json.load(open(p)); d[sys.argv[1]]+=1; json.dump(d,open("evidence/wrong-"+sys.argv[1]+".json","w"))' "$key"
+            if python3 examples/daerdo-minimax-story30/asset-qa.py metadata --file evidence/probe.json --manifest "evidence/wrong-$key.json" --out evidence > "evidence/red-$key.log" 2>&1; then
+              echo "Wrong real manifest $key unexpectedly passed"; exit 1
+            fi
+            case "$key" in
+              source_duration) grep -q '^ASSET_QA_FAIL: exact genuine source duration$' "evidence/red-$key.log";;
+              source_frames) grep -q '^ASSET_QA_FAIL: exact genuine decoded source frames$' "evidence/red-$key.log";;
+            esac
+            echo "RED actual manifest $key mismatch" >> evidence/acceptance.txt
+          done
+          python3 examples/daerdo-minimax-story30/asset-qa.py metadata --file evidence/probe.json --manifest examples/daerdo-minimax-story30/assets/wash-source.json --out evidence > evidence/green-metadata.log 2>&1
       - name: Genuine frozen video RED then original video GREEN
         run: |
           set -euo pipefail
