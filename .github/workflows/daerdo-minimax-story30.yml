@@ -98,6 +98,13 @@ jobs:
             evidence/asset-alpha.json
             examples/daerdo-minimax-story30/treatment.md
           retention-days: 7
+      - name: Characterize historical native seek capture separately
+        run: |
+          set +e
+          DAERDO_MINIMAX_VIDEO=seek node --test --test-reporter=tap test/daerdo-minimax-story30.test.js > evidence/seek-diagnostic.tap 2>&1
+          result=$?
+          echo "Historical seek diagnostic exit=$result; required gate below uses production extract with unchanged raster assertions" | tee evidence/seek-diagnostic.txt
+          exit 0
       - name: Actual visual defect RED controls then GREEN
         run: |
           set -euo pipefail
