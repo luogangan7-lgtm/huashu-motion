@@ -11,7 +11,7 @@
   "required_source_width_fraction": 0.6,
   "segments": [
     {
-      "source_start": 10.0,
+      "source_start": 14.0,
       "start_sentence": 0,
       "duration": 4,
       "label": "G25BT · REAL PRODUCT FOOTAGE",
@@ -19,7 +19,7 @@
       "crop_x_fraction": 0.5
     },
     {
-      "source_start": 9.5,
+      "source_start": 12.0,
       "start_sentence": 2,
       "duration": 2,
       "label": "01 / VISIBLE CONTROL",
@@ -85,5 +85,6 @@
     "Audience outcomes"
   ],
   "narration": "One hearing aid. Three controls to inspect. The O and N switch. The numbered volume wheel. And the M button. For your next sample review, look at each control separately. Confirm the exact model and ask for its current instructions. Explore G25BT at Daerdo dot com.",
-  "alignment": "Segment changes follow measured sentence start times in voice.words.json. Raw footage runs at original speed. No fitted/held frames."
+  "alignment": "Segment changes follow measured sentence start times in voice.words.json. Raw footage runs at original speed. No fitted/held frames.",
+  "shot_review_fix": "Initial CI film rejected: switch narration showed ear-tip side at source9.5. Retimed introduction to14.0 and switch to12.0 using original source audit frames."
 }

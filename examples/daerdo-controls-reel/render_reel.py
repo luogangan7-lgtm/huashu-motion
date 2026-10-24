@@ -138,7 +138,7 @@ def subtitles(sidecar, narration, duration):
                                       break_on_hyphens=False)
                 if len(lines) > 2 or any(len(line) > 34 for line in lines):
                     break
-                if own[stop - 1]['end'] - own[cut]['start'] > 4.2 and best:
+                if own[stop - 1]['end'] - own[cut]['start'] > 4.8 and best:
                     break
                 best = (stop, fragment, lines)
             require(best is not None, 'Subtitle token cannot fit safe width')
@@ -249,7 +249,7 @@ def main():
     cropped_height = int(int(v['height']) * .82 / 2) * 2
     footage_height = int(1080 * cropped_height / (int(v['width']) * retained) / 2) * 2
     require(800 <= footage_height <= 1080, 'Live footage height must be 800..1080')
-    font = Path(brief.get('font_file', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'))
+    font = Path(brief.get('font_file', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
     require(font.is_file() and not re.search(r"[,:;'\\]", str(font)), 'Invalid font path')
     brand = clean(brief.get('brand', 'DAERDO'), 16)
     (out / 'brand.txt').write_text(brand)
@@ -267,7 +267,7 @@ PlayResY: 1920
 WrapStyle: 2
 [V4+ Styles]
 Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
-Style: Default,DejaVu Sans Mono,42,&H00FFFFFF,&H00FFFFFF,&H001C160C,&H001C160C,-1,0,0,0,100,100,0,0,3,9,0,2,90,90,390,1
+Style: Default,DejaVu Sans,48,&H00FFFFFF,&H00FFFFFF,&H001C160C,&H001C160C,-1,0,0,0,100,100,0,0,3,9,0,2,90,90,390,1
 [Events]
 Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
 ''' + '\n'.join(events) + '\n')
