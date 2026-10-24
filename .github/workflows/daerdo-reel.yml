@@ -1,0 +1,68 @@
+name: DAERDO real footage Reel
+on:
+  pull_request:
+    paths: ['examples/daerdo-controls-reel/**', '.github/workflows/daerdo-reel.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: daerdo-reel-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  reel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      OM_SAMPLES: 'off'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Hosted tools and pinned source
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
+          echo "SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "HOME=$RUNNER_TEMP/reel-home" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/reel-home"
+          git rev-parse HEAD
+          python3 examples/daerdo-controls-reel/audit_source.py examples/daerdo-controls-reel
+          echo "STAGE=$(jq -r .stage examples/daerdo-controls-reel/brief.json)" >> "$GITHUB_ENV"
+      - name: Upload original source audit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-reel-source-${{ github.event.pull_request.head.sha || github.sha }}
+          path: examples/daerdo-controls-reel/out/
+          retention-days: 7
+      - name: Existing huashu free voice
+        if: env.STAGE == 'render'
+        run: |
+          set -euo pipefail
+          python3 -m venv "$HOME/.cache/huashu-motion/tts-venv"
+          "$HOME/.cache/huashu-motion/tts-venv/bin/pip" install 'kokoro-onnx==0.6.1' 'soundfile==0.14.0'
+          timeout 5m node cli/om.js voice examples/daerdo-controls-reel --text examples/daerdo-controls-reel/script.txt --voice af_heart --speed 0.8
+          sha256sum "$HOME/.cache/huashu-motion/tts/"* > examples/daerdo-controls-reel/out/tts-model-sha256.txt
+          "$HOME/.cache/huashu-motion/tts-venv/bin/pip" freeze > examples/daerdo-controls-reel/out/tts-packages.txt
+      - name: Actual moving footage, narration and subtitle render
+        if: env.STAGE == 'render'
+        run: |
+          set -euo pipefail
+          timeout 8m python3 examples/daerdo-controls-reel/render_reel.py examples/daerdo-controls-reel
+      - name: Upload actual film and bound evidence
+        if: always() && env.STAGE == 'render'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: daerdo-reel-final-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            examples/daerdo-controls-reel/out/
+            examples/daerdo-controls-reel/assets/voice.words.json
+            examples/daerdo-controls-reel/script.txt
+            examples/daerdo-controls-reel/brief.json
+          retention-days: 7
+          if-no-files-found: error

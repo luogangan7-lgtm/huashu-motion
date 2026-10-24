@@ -1,0 +1,90 @@
+{
+  "id": "daerdo-g25bt-controls-20261024",
+  "stage": "render",
+  "format": "9:16 real-footage narrated Reel",
+  "publication": "NOT_ATTEMPTED_THIS_RUN",
+  "source_sha256": "f5533e76276d211a0952843f525521553c53bf01309c8eff3bccc83f793875b2",
+  "source_rights": "Original supplied supplier product listing footage, prior human authorization 85ca6af2-afb0-432a-b484-62847a2c811b; use existing visible handling only.",
+  "duration_min": 20,
+  "duration_max": 35,
+  "source_width_fraction": 0.6,
+  "required_source_width_fraction": 0.6,
+  "segments": [
+    {
+      "source_start": 14.0,
+      "start_sentence": 0,
+      "duration": 4,
+      "label": "G25BT · REAL PRODUCT FOOTAGE",
+      "title": "One device. Three controls.",
+      "crop_x_fraction": 0.5
+    },
+    {
+      "source_start": 12.0,
+      "start_sentence": 2,
+      "duration": 2,
+      "label": "01 / VISIBLE CONTROL",
+      "title": "O / N switch",
+      "crop_x_fraction": 0.5
+    },
+    {
+      "source_start": 14.0,
+      "start_sentence": 3,
+      "duration": 4,
+      "label": "02 + 03 / VISIBLE CONTROLS",
+      "title": "Volume wheel + M button",
+      "crop_x_fraction": 0.5
+    },
+    {
+      "source_start": 6.0,
+      "start_sentence": 5,
+      "duration": 5,
+      "label": "SAMPLE HANDLING REVIEW",
+      "title": "Inspect your exact sample.",
+      "crop_x_fraction": 0.52
+    },
+    {
+      "source_start": 12.0,
+      "start_sentence": 6,
+      "duration": 5,
+      "label": "MODEL + CURRENT INSTRUCTIONS",
+      "title": "Keep the instructions close.",
+      "crop_x_fraction": 0.5
+    },
+    {
+      "source_start": 9.5,
+      "start_sentence": 7,
+      "duration": 6,
+      "label": "G25BT / DAERDO.COM",
+      "title": "Request a sample review.",
+      "crop_x_fraction": 0.5
+    }
+  ],
+  "reader_value": {
+    "audience": "Distributor/private-label/retail buyer examining a G25BT sample",
+    "attention": "One device, three distinct visible controls, shown in actual moving footage",
+    "payoff": "Identify the O/N switch, numbered volume wheel and M button; request current instructions for the exact sample",
+    "basis": "Official current G25BT PDP control section, observed real source footage; editorial premise, no performance forecast"
+  },
+  "novelty": "UPDATE of G25BT source footage: controls layout rather than Oct6 reconnection checklist or Oct19 spares enquiry",
+  "sources": [
+    {
+      "url": "https://daerdo.com/products/g25bt-bluetooth-bte",
+      "checked_at": "2026-10-24",
+      "supports": "Source-visible wheel, M button and O/N switch. No operating sequence, battery/clinical/compatibility claim."
+    }
+  ],
+  "style": {
+    "navy": "#0B2D50",
+    "blue": "#235D99",
+    "accent": "#C8EBEA",
+    "approved_anchors": "Daerdo existing brand colours; new actual-video edit pending user review"
+  },
+  "not_run": [
+    "Publication",
+    "CCE measurement",
+    "Audience outcomes"
+  ],
+  "narration": "One hearing aid. Three controls to inspect. The O and N switch. The numbered volume wheel. And the M button. For your next sample review, look at each control separately. Confirm the exact model and ask for its current instructions. Explore G25BT at Daerdo dot com.",
+  "alignment": "Segment changes follow measured sentence start times in voice.words.json. Raw footage runs at original speed. No fitted/held frames.",
+  "shot_review_fix": "Initial CI film rejected: switch narration showed ear-tip side at source9.5. Retimed introduction to14.0 and switch to12.0 using original source audit frames."
+}
