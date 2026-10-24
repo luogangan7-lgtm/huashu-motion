@@ -343,6 +343,8 @@ Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
     require(-20 <= float(loudness['input_i']) <= -12
             and float(loudness['input_tp']) <= -.5, 'Loudness/true peak outside gate')
     save(out / 'loudness.json', loudness)
+    run(['ffmpeg', '-v', 'error', '-i', target, '-vn', '-c:a', 'libmp3lame',
+         '-b:a', '128k', out / 'final-audio.mp3'], logs / 'audio-preview.log')
     for i, segment in enumerate(segments):
         midpoint = (segment['timeline_start'] + segment['timeline_end']) / 2
         run(['ffmpeg', '-v', 'error', '-ss', midpoint, '-i', target, '-frames:v', '1',

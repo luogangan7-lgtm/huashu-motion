@@ -46,7 +46,7 @@ jobs:
           set -euo pipefail
           python3 -m venv "$HOME/.cache/huashu-motion/tts-venv"
           "$HOME/.cache/huashu-motion/tts-venv/bin/pip" install 'kokoro-onnx==0.6.1' 'soundfile==0.14.0'
-          timeout 5m node cli/om.js voice examples/daerdo-controls-reel --text examples/daerdo-controls-reel/script.txt --voice af_heart --speed 1
+          timeout 5m node cli/om.js voice examples/daerdo-controls-reel --text examples/daerdo-controls-reel/script.txt --voice af_heart --speed 0.8
           sha256sum "$HOME/.cache/huashu-motion/tts/"* > examples/daerdo-controls-reel/out/tts-model-sha256.txt
           "$HOME/.cache/huashu-motion/tts-venv/bin/pip" freeze > examples/daerdo-controls-reel/out/tts-packages.txt
       - name: Actual moving footage, narration and subtitle render
