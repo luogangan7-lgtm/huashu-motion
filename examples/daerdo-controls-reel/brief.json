@@ -1,0 +1,39 @@
+{
+  "id": "daerdo-g25bt-controls-20261024",
+  "stage": "audit",
+  "format": "9:16 real-footage narrated Reel",
+  "publication": "NOT_ATTEMPTED_THIS_RUN",
+  "source_sha256": "f5533e76276d211a0952843f525521553c53bf01309c8eff3bccc83f793875b2",
+  "source_rights": "Original supplied supplier product listing footage, prior human authorization 85ca6af2-afb0-432a-b484-62847a2c811b; use existing visible handling only.",
+  "voice": "One hearing aid. Three controls to inspect. The O and N switch. The numbered volume wheel. And the M button. For your next sample review, look at each control separately. Confirm the exact model and ask for its current instructions. Explore G25BT at Daerdo dot com.",
+  "duration_min": 20,
+  "duration_max": 35,
+  "source_width_fraction": 0.6,
+  "required_source_width_fraction": 0.6,
+  "segments": [],
+  "reader_value": {
+    "audience": "Distributor/private-label/retail buyer examining a G25BT sample",
+    "attention": "One device, three distinct visible controls, shown in actual moving footage",
+    "payoff": "Identify the O/N switch, numbered volume wheel and M button; request current instructions for the exact sample",
+    "basis": "Official current G25BT PDP control section, observed real source footage; editorial premise, no performance forecast"
+  },
+  "novelty": "UPDATE of G25BT source footage: controls layout rather than Oct6 reconnection checklist or Oct19 spares enquiry",
+  "sources": [
+    {
+      "url": "https://daerdo.com/products/g25bt-bluetooth-bte",
+      "checked_at": "2026-10-24",
+      "supports": "Source-visible wheel, M button and O/N switch. No operating sequence, battery/clinical/compatibility claim."
+    }
+  ],
+  "style": {
+    "navy": "#0B2D50",
+    "blue": "#235D99",
+    "accent": "#C8EBEA",
+    "approved_anchors": "Daerdo existing brand colours; new actual-video edit pending user review"
+  },
+  "not_run": [
+    "Publication",
+    "CCE measurement",
+    "Audience outcomes"
+  ]
+}
